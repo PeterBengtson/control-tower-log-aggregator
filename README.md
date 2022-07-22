@@ -13,8 +13,4 @@ to a dedicated long-term storage bucket with sensible Glacier lifecycle settings
 
 Install in the Log Archive account, in your main region.
 
-Note that the Step Function can take several arguments. If a function finds that the
-data it's been called to compute already exists, it will simply return that result.
-This means you can call the Step function with an explicit date or bucket, etc, without
-invoking the whole machinery.
 
