@@ -1,0 +1,195 @@
+Comment: A state machine that combines log files.
+StartAt: Setup
+States:
+    Setup:
+        Type: Pass
+        Parameters:
+            ct_bucket_name: '${ControlTowerBucketName}'
+            ct_log_types:
+                - CloudTrail
+                - CloudTrail-Digest
+                - Config
+            bucket_names: '${OtherBucketNames}'
+        Next: Get Data
+
+    Get Data:
+        Type: Task
+        Resource: '${GetYesterdaysDateFunctionArn}'
+        Retry:
+            -
+                ErrorEquals:
+                    - States.Timeout
+                    - Lambda.ServiceException
+                    - Lambda.AWSLambdaException
+                    - Lambda.SdkClientException
+        Next: Get Control Tower Account IDs
+
+    Get Control Tower Account IDs:
+        Type: Task
+        Resource: '${GetControlTowerAccountIDsFunctionArn}'
+        ResultPath: $.account_prefixes
+        Retry:
+            -
+                ErrorEquals:
+                    - States.Timeout
+                    - Lambda.ServiceException
+                    - Lambda.AWSLambdaException
+                    - Lambda.SdkClientException
+        Next: Process Accounts
+
+    Process Accounts:
+        Type: Map
+        ItemsPath: $.account_prefixes
+        MaxConcurrency: 5
+        Parameters:
+            bucket_name.$: $.ct_bucket_name
+            date.$: $.date
+            prefix.$: $$.Map.Item.Value
+            ct_log_types.$: $.ct_log_types
+        ResultPath: null
+        Iterator:
+            StartAt: Process Main Logs
+            States:
+                Process Main Logs:
+                    Type: Map
+                    ItemsPath: $.ct_log_types
+                    MaxConcurrency: 0
+                    Parameters:
+                        bucket_name.$: $.bucket_name
+                        date.$: $.date
+                        account_prefix.$: $.prefix
+                        ct_log_type.$: $$.Map.Item.Value
+                    ResultPath: null
+                    Iterator:
+                        StartAt: Get Regions
+                        States:
+                            Get Regions:
+                                Type: Task
+                                Resource: '${GetRegionsFunctionArn}'
+                                ResultPath: $.region_prefixes
+                                Retry:
+                                    -
+                                        ErrorEquals:
+                                            - States.Timeout
+                                            - Lambda.ServiceException
+                                            - Lambda.AWSLambdaException
+                                            - Lambda.SdkClientException
+                                Next: Get Main Log Files
+
+                            Get Main Log Files:
+                                Type: Task
+                                Resource: '${GetExactFilesFunctionArn}'
+                                ResultPath: $.files
+                                Retry:
+                                    -
+                                        ErrorEquals:
+                                            - States.Timeout
+                                            - Lambda.ServiceException
+                                            - Lambda.AWSLambdaException
+                                            - Lambda.SdkClientException
+                                Next: Determine Main Log Archive Key
+
+                            Determine Main Log Archive Key:
+                                Type: Task
+                                Resource: '${DetermineArchiveKeyFunctionArn}'
+                                ResultPath: $.key
+                                Retry:
+                                    -
+                                        ErrorEquals:
+                                            - States.Timeout
+                                            - Lambda.ServiceException
+                                            - Lambda.AWSLambdaException
+                                            - Lambda.SdkClientException
+                                Next: Combine Main Log Files
+
+                            Combine Main Log Files:
+                                Type: Task
+                                Resource: '${CombineLogFilesFunctionArn}'
+                                ResultPath: null
+                                Retry:
+                                    -
+                                        ErrorEquals:
+                                            - States.Timeout
+                                            - Lambda.ServiceException
+                                            - Lambda.AWSLambdaException
+                                            - Lambda.SdkClientException
+                                Next: Delete Main Log Originals
+
+                            Delete Main Log Originals:
+                                Type: Task
+                                Resource: '${DeleteOriginalsFunctionArn}'
+                                ResultPath: null
+                                Retry:
+                                    -
+                                        ErrorEquals:
+                                            - States.Timeout
+                                            - Lambda.ServiceException
+                                            - Lambda.AWSLambdaException
+                                            - Lambda.SdkClientException
+                                End: true
+                    End: true
+        Next: Process Other Buckets
+
+    Process Other Buckets:
+        Type: Map
+        ItemsPath: $.bucket_names
+        MaxConcurrency: 5
+        Parameters:
+            bucket_name.$: $$.Map.Item.Value
+            date.$: $.date
+        ResultPath: null
+        Iterator:
+            StartAt: Get Files
+            States:
+                Get Files:
+                    Type: Task
+                    Resource: '${GetFilesFunctionArn}'
+                    ResultPath: $.files
+                    Retry:
+                        -
+                            ErrorEquals:
+                                - States.Timeout
+                                - Lambda.ServiceException
+                                - Lambda.AWSLambdaException
+                                - Lambda.SdkClientException
+                    Next: Determine Archive Key
+
+                Determine Archive Key:
+                    Type: Task
+                    Resource: '${DetermineArchiveKeyFunctionArn}'
+                    ResultPath: $.key
+                    Retry:
+                        -
+                            ErrorEquals:
+                                - States.Timeout
+                                - Lambda.ServiceException
+                                - Lambda.AWSLambdaException
+                                - Lambda.SdkClientException
+                    Next: Combine Log Files
+
+                Combine Log Files:
+                    Type: Task
+                    Resource: '${CombineLogFilesFunctionArn}'
+                    ResultPath: null
+                    Retry:
+                        -
+                            ErrorEquals:
+                                - States.Timeout
+                                - Lambda.ServiceException
+                                - Lambda.AWSLambdaException
+                                - Lambda.SdkClientException
+                    Next: Delete Originals
+
+                Delete Originals:
+                    Type: Task
+                    Resource: '${DeleteOriginalsFunctionArn}'
+                    ResultPath: null
+                    Retry:
+                        -
+                            ErrorEquals:
+                                - States.Timeout
+                                - Lambda.ServiceException
+                                - Lambda.AWSLambdaException
+                                - Lambda.SdkClientException
+                    End: true
+        End: true

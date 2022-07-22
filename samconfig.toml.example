@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "control-tower-log-aggregator"
+region = "xx-xxxx-1"
+capabilities = "CAPABILITY_NAMED_IAM"
+image_repositories = []
+tags = ""
+parameter_overrides = "ControlTowerBucket=\"aws-controltower-logs-111122223333-xx-xxxx-1\" OtherBuckets=\"foo-bucket,bar-bucket,baz-bucket\", FinalAggregationPrefix=\"AggregatedLogs\" OrganizationId=\"o-xxxxxxxxxx\" UseCommonDestinationBucket=\"Yes\" ExpirationInDays=\"3650\" DaysUntilGlacierDeepArchive=\"90\" GlacierObjectSize=\"204800\""

@@ -1,0 +1,400 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SAM project to combine small daily log files into larger daily log files, 
+  to make it possible to store them in Glacier without extra overhead and
+  avoiding prohibitive costs. AWS Control Tower is required. 
+  
+  Apart from the standard Control Tower log buckets, this application can also 
+  process any arbitrary log buckets, as long as the log files in them have 
+  dates in their path/object name.
+  
+  It can also either process in place in each source bucket, or move the results 
+  to a dedicated long-term storage bucket with sensible Glacier lifecycle settings.
+
+Globals:
+  Function:
+    Runtime: python3.8
+    MemorySize: 256
+    Handler: app.lambda_handler
+    Timeout: 900
+    Architectures:
+      - x86_64
+
+Parameters:
+
+  ControlTowerBucket:
+    Type: String
+    Description: The name of the Control Tower system log bucket
+    Default: 'aws-controltower-logs-111122223333-eu-north-1'
+
+  OtherBuckets:
+    Type: String
+    Description: The list of buckets other than the Control Tower system log bucket
+    Default: "foo-bucket,bar-bucket,baz-bucket"
+
+  FinalAggregationPrefix:
+    Type: String
+    Description: The final prefix for aggregated files when working in-place. 
+      The 'folder' of aggregated files. Ignored if a common destination bucket
+      is used.      
+    Default: 'AggregatedLogs'
+
+  OrganizationId:
+    Type: String
+    Description: The ID of the AWS Organization
+    Default: 'o-xxxxxxxxxx'
+
+  UseCommonDestinationBucket:
+    Type: String
+    Description: 
+      If Yes, collect all log files into a common bucket with proper lifecycle configuration.
+      If No, the source bucket is also the destination bucket.
+    Default: 'Yes'
+    AllowedValues: ['Yes', 'No']
+
+  ExpirationInDays:
+    Type: Number
+    Description: The number of days after which aggregated logs will expire.
+    Default: 3650
+
+  DaysUntilGlacierDeepArchive:
+    Type: Number
+    Description: The number of days after which logs will be archived to Glacier Deep Archive.
+    Default: 90
+
+  GlacierObjectSize:
+    Type: Number
+    Description: The minimum size of log files to transition to Glacier Deep Archive.
+    Default: 204800
+
+  
+Conditions:
+  UseCommonDestinationBucket: !Equals
+    - !Ref UseCommonDestinationBucket
+    - 'Yes'
+
+
+Resources:
+
+  CommonDestinationBucket:
+    Type: AWS::S3::Bucket
+    Condition: UseCommonDestinationBucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "all-aggregated-logs-${AWS::AccountId}-${AWS::Region}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          -
+            Id: ToGlacier
+            Status: Enabled
+            ObjectSizeGreaterThan: !Ref GlacierObjectSize
+            Transitions:
+              - TransitionInDays: !Ref DaysUntilGlacierDeepArchive
+                StorageClass: DEEP_ARCHIVE
+          - 
+            Id: FinalExpiration
+            Status: Enabled
+            ExpirationInDays: !Ref ExpirationInDays
+
+  TmpLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      # Must NOT be versioned!
+      BucketName: !Sub "tmp-logs-${AWS::AccountId}-${AWS::Region}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ShortLifeRule
+            Status: Enabled
+            ExpirationInDays: 2
+
+  CombineLogFilesStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: statemachine/combine_log_files.asl.yaml
+      DefinitionSubstitutions:
+        GetYesterdaysDateFunctionArn: !GetAtt GetYesterdaysDateFunction.Arn
+        GetFilesFunctionArn: !GetAtt GetFilesFunction.Arn
+        DetermineArchiveKeyFunctionArn: !GetAtt DetermineArchiveKeyFunction.Arn
+        CombineLogFilesFunctionArn: !GetAtt CombineLogFilesFunction.Arn
+        DeleteOriginalsFunctionArn: !GetAtt DeleteOriginalsFunction.Arn
+        GetControlTowerAccountIDsFunctionArn: !GetAtt GetControlTowerAccountIDsFunction.Arn
+        GetRegionsFunctionArn: !GetAtt GetRegionsFunction.Arn
+        GetExactFilesFunctionArn: !GetAtt GetExactFilesFunction.Arn
+        ControlTowerBucketName: !Ref ControlTowerBucket
+        OtherBucketNames: !Ref OtherBuckets
+      Events:
+        Daily:
+          Type: Schedule
+          Properties:
+            Description: Schedule to run the combine_log_files state machine every day at 1 am
+            Enabled: true
+            Schedule: "cron(0 1 * * ? *)"
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GetYesterdaysDateFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GetFilesFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref DetermineArchiveKeyFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref CombineLogFilesFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref DeleteOriginalsFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GetControlTowerAccountIDsFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GetRegionsFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GetExactFilesFunction
+
+  CombineLogFilesFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/combine_log_files/
+      Policies:
+        - Statement:
+            - 
+              Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:CompleteMultipartUpload
+                - s3:CreateMultipartUpload
+                - s3:DeleteObject
+                - s3:DeleteObjectVersion
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+                - s3:ListBucketVersions
+                - s3:ListObjectVersions
+                - s3:PutObject
+                - s3:UploadFileobj
+                - s3:UploadPartCopy
+              Resource: '*'
+            -
+              Sid: KMSKeysFromOtherAccounts
+              Effect: Allow
+              Action:
+                - kms:Encrypt
+                - kms:Decrypt
+                - kms:ReEncrypt*
+                - kms:GenerateDataKey*
+                - kms:DescribeKey
+              Resource: '*'   # All of them, from all accounts
+      Environment:
+        Variables:
+          TMP_LOGS_BUCKET_NAME: !Ref TmpLogsBucket
+          DEST_LOGS_BUCKET_NAME: !If [UseCommonDestinationBucket, !Ref CommonDestinationBucket, '']
+
+
+  GetYesterdaysDateFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/get_yesterdays_date/
+
+
+  DetermineArchiveKeyFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/determine_archive_key/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+              Resource: '*'
+      Environment:
+        Variables:
+          TMP_LOGS_BUCKET_NAME: !Ref TmpLogsBucket
+          DEST_LOGS_BUCKET_NAME: !If [UseCommonDestinationBucket, !Ref CommonDestinationBucket, '']
+          FINAL_AGGREGATION_PREFIX: !Ref FinalAggregationPrefix
+
+
+  GetFilesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/get_files/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+                - s3:PutObject
+              Resource: '*'
+      Environment:
+        Variables:
+          TMP_LOGS_BUCKET_NAME: !Ref TmpLogsBucket
+
+
+  GetExactFilesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/get_exact_files/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+                - s3:PutObject
+              Resource: '*'
+      Environment:
+        Variables:
+          TMP_LOGS_BUCKET_NAME: !Ref TmpLogsBucket
+
+
+  DeleteOriginalsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/delete_originals/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:DeleteObject
+                - s3:DeleteObjects
+                - s3:DeleteObjectVersion
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+                - s3:ListBucketVersions
+                - s3:ListObjectVersions
+              Resource: '*'
+      Environment:
+        Variables:
+          TMP_LOGS_BUCKET_NAME: !Ref TmpLogsBucket
+
+
+  GetControlTowerAccountIDsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/get_control_tower_account_ids/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+              Resource: '*'
+      Environment:
+        Variables:
+          ORG_ID: !Ref OrganizationId
+
+
+  GetRegionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/get_regions/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+              Resource: '*'
+
+
+  EmptyVersionedBucketFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/empty_versioned_bucket/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:DeleteObject
+                - s3:DeleteObjects
+                - s3:DeleteObjectVersion
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+                - s3:ListBucketVersions
+                - s3:ListObjectVersions
+              Resource: '*'
+      Events:
+        EmptyS3AccessBucket:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(1 hour)'
+            Name: EmptyS3AccessBucket
+            Description: Empty Control Tower misconfigured S3 access bucket
+            Enabled: true
+      Environment:
+        Variables:
+          BUCKET_NAME: 'aws-controltower-s3-access-logs-779511826399-eu-north-1'
+
+
+  # Alarm
+
+  AlarmCombineLogFilesStateMachine:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: INFRA-CombineLogFilesStateMachine-Failure-HIGH
+      AlarmDescription: The CombineLogFilesStateMachine state machine failed.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions: []
+      InsufficientDataActions: []
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
+      Statistic: Sum
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Ref CombineLogFilesStateMachine
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
