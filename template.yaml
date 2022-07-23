@@ -108,6 +108,12 @@ Resources:
             Id: FinalExpiration
             Status: Enabled
             ExpirationInDays: !Ref ExpirationInDays
+          -
+            Id: NonCurrentVersionsExpiration
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NewerNoncurrentVersions: 0
+              NoncurrentDays: 1
 
   TmpLogsBucket:
     Type: AWS::S3::Bucket
