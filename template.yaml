@@ -132,7 +132,12 @@ Resources:
         Rules:
           - Id: ShortLifeRule
             Status: Enabled
-            ExpirationInDays: 2
+            ExpirationInDays: 1
+          -
+            Id: AbortIncomplete
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
 
   CombineLogFilesStateMachine:
     Type: AWS::Serverless::StateMachine
