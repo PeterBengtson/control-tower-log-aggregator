@@ -26,9 +26,10 @@ def lambda_handler(data, _context):
     s3_client = boto3.client('s3')
     s3_resource = boto3.resource('s3')
 
-    # we need to have a garbage/dummy file with size > 5MB
-    # so we create and upload this
-    # this key will also be the key of final merged file
+    # The beauty of copying this way is that it is done entirely within S3, without actually
+    # down- or uploading anything. However, multipart uploads require that all files but the
+    # last one is > 5MB, we need to upload a file of this size to the scratchpad temo bucket 
+    # as a starting point. The key used is the same as that of the final merged file.
     with open(dummy_file_path, 'wb') as f:
         # slightly > 5MB
         f.seek(1024 * 5200) 
@@ -39,23 +40,22 @@ def lambda_handler(data, _context):
 
     os.remove(dummy_file_path)
 
-    # get the number of bytes of the garbage/dummy-file
-    # needed to strip out these garbage/dummy bytes from the final merged file
+    # This is the actual size of the dummy file. We need it later to strip away the
+    # dummy bytes from the final merged file.
     bytes_garbage = s3_resource.Object(TMP_LOGS_BUCKET_NAME, merged_key).content_length
 
-    # for each small file you want to concat
+    # We now perform a series of two-file multipart uploads, one for each log file we need to
+    # aggregate. We could do several at a time if all of them were > 5MB (except the last one);
+    # that would be an optimisation worth making, especially since log files do not need to be
+    # concatenated in order. But this version simply does them one at a time.
     for key_mini_file in input_files:
 
-        # initiate multipart upload with merged.json object as target
+        # Initiate the multipart upload
         mpu = s3_client.create_multipart_upload(Bucket=TMP_LOGS_BUCKET_NAME, Key=merged_key)
             
         part_responses = []
-        # Perform multipart copy where the final file is the first part 
-        # and the small file is the second part. Yes, there will be one
-        # multipart upload for each small file, since all files but the
-        # last one must be > 5MB. For this reason, this is best done in
-        # a bucket without versioning enabled, unless you want an enormous
-        # number of versions with delete markers after the operation.
+        # The following is best done in a bucket without versioning enabled, unless you want 
+        # an enormous number of versions with delete markers after the operation.
         for n, copy_key in enumerate([merged_key, key_mini_file]):
             part_number = n + 1
             copy_response = s3_client.upload_part_copy(
@@ -76,8 +76,7 @@ def lambda_handler(data, _context):
                 }
             )
 
-        # complete the multipart upload
-        # content of merged will now be merged.json + mini file
+        # Finish the multipart upload for this log file to the temp bucket.
         response = s3_client.complete_multipart_upload(
             Bucket=TMP_LOGS_BUCKET_NAME,
             Key=merged_key,
@@ -85,17 +84,18 @@ def lambda_handler(data, _context):
             UploadId=mpu['UploadId']
         )
 
-    # get the number of bytes from the final merged file
+    # All log files have now been added to the dummy file in the temp bucket.
+    # Get the size of the result (which includes the +5MB dummy bytes)
     bytes_merged = s3_resource.Object(TMP_LOGS_BUCKET_NAME, merged_key).content_length
 
-    # initiate a new multipart upload, this time to the destination bucket
+    # Initiate the final move of the result from the temp bucket to the chosen destination 
+    # bucket, and also store the result using the Standard Infrequent Access storage class.
     mpu = s3_client.create_multipart_upload(
         Bucket=dest_bucket_name, 
         Key=merged_key,
         StorageClass='STANDARD_IA'
     )            
-    # do a single copy from the merged file specifying byte range where the 
-    # dummy/garbage bytes are excluded
+    # All we need here is a single part consisting of everything except the dummy bytes.
     response = s3_client.upload_part_copy(
         Bucket=dest_bucket_name,
         CopySource={'Bucket': TMP_LOGS_BUCKET_NAME, 'Key': merged_key},
@@ -104,7 +104,7 @@ def lambda_handler(data, _context):
         UploadId=mpu['UploadId'],
         CopySourceRange='bytes={}-{}'.format(bytes_garbage, bytes_merged-1)
     )
-    # complete the multipart upload
+    # Do the upload
     response = s3_client.complete_multipart_upload(
         Bucket=dest_bucket_name,
         Key=merged_key,
@@ -118,6 +118,7 @@ def lambda_handler(data, _context):
         },
         UploadId=mpu['UploadId']
     )
+    # The final result is now in place in the destination bucket.
 
     # Delete the versionless merged version from the temp bucket
     response = s3_client.delete_object(
