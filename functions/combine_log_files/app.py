@@ -27,8 +27,8 @@ def lambda_handler(data, _context):
     s3_resource = boto3.resource('s3')
 
     # The beauty of copying this way is that it is done entirely within S3, without actually
-    # down- or uploading anything. However, multipart uploads require that all files but the
-    # last one is > 5MB, we need to upload a file of this size to the scratchpad temo bucket 
+    # down- or uploading anything. However, as multipart uploads require that all files but 
+    # the last one be > 5MB, we need to upload a file of this size to the scratchpad temp bucket 
     # as a starting point. The key used is the same as that of the final merged file.
     with open(dummy_file_path, 'wb') as f:
         # slightly > 5MB
