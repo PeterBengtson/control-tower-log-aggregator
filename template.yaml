@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   SAM project to combine small daily log files into larger daily log files, 
-  to make it possible to store them in Glacier without extra overhead and
+  to make it possible to store them in Glacier without extra overhead, thereby
   avoiding prohibitive costs. AWS Control Tower is required. 
 
   Apart from the standard Control Tower log buckets, this application can also 
