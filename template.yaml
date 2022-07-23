@@ -109,11 +109,10 @@ Resources:
             Status: Enabled
             ExpirationInDays: !Ref ExpirationInDays
           -
-            Id: NonCurrentVersionsExpiration
+            Id: AbortIncomplete
             Status: Enabled
-            NoncurrentVersionExpiration:
-              NewerNoncurrentVersions: 0
-              NoncurrentDays: 1
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
 
   TmpLogsBucket:
     Type: AWS::S3::Bucket
