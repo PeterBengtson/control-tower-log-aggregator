@@ -13,7 +13,7 @@ def lambda_handler(data, _context):
     bucket_name = data['bucket_name']
     prefix = data.get('prefix', '')
     date = data['date']
-    only_gz = False # 's3-access-logs' not in bucket_name
+    only_gz = False
 
     print(f"Checking existence of {bucket_name}...")
     s3_client.head_bucket(Bucket=bucket_name)
