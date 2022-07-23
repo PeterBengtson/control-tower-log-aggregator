@@ -1,7 +1,7 @@
 # control-tower-log-aggregator
 
 SAM project to combine small daily log files into larger daily log files, 
-to make it possible to store them in Glacier without extra overhead and
+to make it possible to store them in Glacier without extra overhead, thereby
 avoiding prohibitive costs. AWS Control Tower is required. 
 
 Apart from the standard Control Tower log buckets, this application can also 
