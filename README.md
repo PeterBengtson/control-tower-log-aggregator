@@ -37,7 +37,7 @@ Take a look at the Parameters section in `template.yaml` for an explanation of t
 ```
 sam build
 ```
-followed by a first deploy command of:
+followed by a first deployment command of:
 ```
 sam deploy --guided --config-file=samconfig.toml
 ```
