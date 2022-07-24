@@ -23,4 +23,7 @@ Install in the Log Archive account, in your main region.
 
 ## architecture
 
-![alt text](https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/StateMachine.png?raw=true)
+The Step Function has the following structure:
+
+![](https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true)
+
