@@ -30,7 +30,12 @@ Parameters:
   ControlTowerBucket:
     Type: String
     Description: The name of the Control Tower system log bucket
-    Default: 'aws-controltower-logs-111122223333-eu-north-1'
+    Default: 'aws-controltower-logs-111122223333-xx-xxxxx-1'
+
+  ControlTowerBucketAccessLogBucket:
+    Type: String
+    Description: The name of the Control Tower system log bucket access log bucket
+    Default: 'aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1' 
 
   OtherBuckets:
     Type: String
@@ -386,7 +391,7 @@ Resources:
             Enabled: true
       Environment:
         Variables:
-          BUCKET_NAME: 'aws-controltower-s3-access-logs-779511826399-eu-north-1'
+          BUCKET_NAME: !Ref ControlTowerBucketAccessLogBucket
 
 
   # Alarm
