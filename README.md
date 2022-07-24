@@ -25,6 +25,27 @@ TODO
 
 Install in the Log Archive account, in your main region.
 
+Prerequisites:
+* AWS CLI
+* AWS SAM CLI
+* Python 3.8 (if you have another version installed, change the default in the
+  Globals section in `template.yaml.`)
+
+Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Then rename `samconfig.toml.example` to `samconfig.toml`. Then do a:
+```
+sam build
+```
+followed by a first deploy command of:
+```
+sam deploy --guided --config-file=samconfig.toml
+```
+This will guide you interactively through setting the parameter overrides.
+
+Next time, simply do a:
+```
+sam build && sam deploy
+```
+
 
 ## architecture
 
