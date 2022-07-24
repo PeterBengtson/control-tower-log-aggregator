@@ -34,17 +34,28 @@ Parameters:
 
   ControlTowerBucketAccessLogBucket:
     Type: String
-    Description: The name of the Control Tower system log bucket access log bucket
+    Description: 
+      The name of the Control Tower system log bucket access log bucket.
+
+      If you are running Control Tower v2.8 or v2.9, enter the name of your
+      Control Tower S3 access log bucket - it is misconfigured by the Control Tower
+      team and its contents useless. The application will empty it every hour.
+      
+      If you are running any other version of Control Tower, leave this parameter
+      blank. Instead, list the name of your Control Tower S3 access log bucket
+      in the OtherBuckets parameter which will set it up to be parsed correctly.
     Default: 'aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1' 
 
   OtherBuckets:
     Type: String
-    Description: The list of buckets other than the Control Tower system log bucket
+    Description: 
+      The list of buckets other than the Control Tower system log bucket
     Default: "foo-bucket,bar-bucket,baz-bucket"
 
   FinalAggregationPrefix:
     Type: String
-    Description: The final prefix for aggregated files when working in-place. 
+    Description: 
+      The final prefix for aggregated files when working in-place. 
       The 'folder' of aggregated files. Ignored if a common destination bucket
       is used.      
     Default: 'AggregatedLogs'
