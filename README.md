@@ -15,6 +15,12 @@ This is a serverless solution, meaning there are no instances or clusters to
 maintain. Also, all copying is done entirely within S3, without down- or uploading 
 anything, something which is of importance when the volume of log files is large.
 
+
+## installation
+
 Install in the Log Archive account, in your main region.
 
 
+## architecture
+
+![alt text](https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/StateMachine.png?raw=true)
