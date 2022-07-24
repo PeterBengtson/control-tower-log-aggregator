@@ -40,7 +40,7 @@ Parameters:
       If you are running Control Tower v2.8 or v2.9, enter the name of your
       Control Tower S3 access log bucket - it is misconfigured by the Control Tower
       team and its contents useless. The application will empty it every hour.
-      
+
       If you are running any other version of Control Tower, leave this parameter
       blank. Instead, list the name of your Control Tower S3 access log bucket
       in the OtherBuckets parameter which will set it up to be parsed correctly.
