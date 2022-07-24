@@ -51,6 +51,8 @@ If you need to change the parameter overrides, you can do so by running `sam bui
 
 ## architecture
 
+TODO
+
 The Step Function has the following structure:
 
 ![](https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true)
