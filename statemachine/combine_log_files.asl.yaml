@@ -133,7 +133,7 @@ States:
     Process Other Buckets:
         Type: Map
         ItemsPath: $.bucket_names
-        MaxConcurrency: 5
+        MaxConcurrency: 10
         Parameters:
             bucket_name.$: $$.Map.Item.Value
             date.$: $.date
