@@ -40,7 +40,7 @@ States:
     Process Accounts:
         Type: Map
         ItemsPath: $.account_prefixes
-        MaxConcurrency: 5
+        MaxConcurrency: 10
         Parameters:
             bucket_name.$: $.ct_bucket_name
             date.$: $.date
