@@ -22,27 +22,27 @@ States:
                     - Lambda.ServiceException
                     - Lambda.AWSLambdaException
                     - Lambda.SdkClientException
-        Next: Get Control Tower Account IDs
-
-    Get Control Tower Account IDs:
-        Type: Task
-        Resource: '${GetControlTowerAccountIDsFunctionArn}'
-        ResultPath: $.account_prefixes
-        Retry:
-            -
-                ErrorEquals:
-                    - States.Timeout
-                    - Lambda.ServiceException
-                    - Lambda.AWSLambdaException
-                    - Lambda.SdkClientException
         Next: Process All Logs
 
     Process All Logs:
         Type: Parallel
         Branches:
             - 
-                StartAt: Process System Logs
+                StartAt: Get Control Tower Account IDs
                 States:
+                    Get Control Tower Account IDs:
+                        Type: Task
+                        Resource: '${GetControlTowerAccountIDsFunctionArn}'
+                        ResultPath: $.account_prefixes
+                        Retry:
+                            -
+                                ErrorEquals:
+                                    - States.Timeout
+                                    - Lambda.ServiceException
+                                    - Lambda.AWSLambdaException
+                                    - Lambda.SdkClientException
+                        Next: Process System Logs
+
                     Process System Logs:
                         Type: Map
                         ItemsPath: $.account_prefixes
