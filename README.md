@@ -129,9 +129,7 @@ we can never guarantee with log files.
 To get around the 5 MB limitation, the application first creates a 5 MB dummy file to use
 as a starting point. It then adds one file at a time until all component files have been aggregated. 
 This is possible because multipart uploads, whilst requiring that all files but the last are 5 MB 
-or greater, allow the last file to be any size. This enables us to do a series of two-part multipart 
-uploads, one for each log file, with the first part being the ever-increasing aggregation file, 
-and the second each log file in turn. When all log files have been added, a final result file is 
+or greater, allow the last file to be any size. When all log files have been added, a final result file is 
 produced by making a copy of the aggregation file, but without the initial 5 MB of dummy data.
 
 As the aggregation is done in place in a dedicated scratch pad bucket, the process is fast even 
