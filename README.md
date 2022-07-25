@@ -21,6 +21,15 @@ anything, something which is of importance when the volume of log files is large
 TODO
 
 
+## architecture
+
+TODO
+
+The Step Function has the following structure:
+
+![](https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true | width=100)
+
+
 ## installation
 
 Install in the Log Archive account, in your main region.
@@ -34,7 +43,7 @@ Prerequisites:
 Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Using a common
 destination bucket is strongly recommended as this provides the cleanest structure. It also allows the application to create a bucket configured for the purpose of optimising long-term storage from a cost perspective.
 
-Before you begin, I strongly recommend you to clean up your existing log buckets as much as possible.
+Before you begin, I strongly recommend you to clean up your existing log buckets.
 This application processes log files from the previous day only, which means that files older than that
 will remain where and as they are. You need to decide what to do with them if you have legal requirements 
 to keep them.
@@ -43,6 +52,10 @@ This application will have no problems processing standard log files - CloudTrai
 no matter how many files are in the bucket. With the buckets listed in `OtherBuckets` however, all log names
 must be read every time and then filtered on the correct date, so make sure they do not contain millions of
 log files, or the concatenation lambda may time out. If you can, do a full delete, including all versions.
+
+If you have Control Tower version 2.8 or 2.9 installed, clean out the entire contents of the Control Tower log bucket
+access log bucket (which has a name similar to `aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1`) 
+right before you begin installation of this application.
 
 When you are ready to install, rename `samconfig.toml.example` to `samconfig.toml`, obtain your SSO temporary credentials from the login screen and paste them into your terminal. 
 
@@ -61,13 +74,3 @@ Next time you need to deploy or update the application, simply do a:
 sam build && sam deploy
 ```
 If you need to change the parameter overrides, you can do so by running `sam deploy --guided` again, or you can simply change the overrides in `samconfig.toml` and just build and deploy using the shorter form given above.
-
-
-## architecture
-
-TODO
-
-The Step Function has the following structure:
-
-![](https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true)
-
