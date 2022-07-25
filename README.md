@@ -31,7 +31,18 @@ Prerequisites:
 * Python 3.8 (if you have another version installed, change the default in the
   Globals section in `template.yaml.`)
 
-Take a look at the Parameters section in `template.yaml` for an explanation of the parameters.  
+Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Using a common
+destination bucket is strongly recommended as this provides the cleanest structure. It also allows the application to create a bucket configured for the purpose of optimising long-term storage from a cost perspective.
+
+Before you begin, I strongly recommend you to clean up your existing log buckets as much as possible.
+This application processes log files from the previous day only, which means that files older than that
+will remain where and as they are. You need to decide what to do with them if you have legal requirements 
+to keep them.
+
+This application will have no problems processing standard log files - CloudTrail, CloudTrail Digest, Config -
+no matter how many files are in the bucket. With the buckets listed in `OtherBuckets` however, all log names
+must be read every time and then filtered on the correct date, so make sure they do not contain millions of
+log files, or the concatenation lambda may time out. If you can, do a full delete, including all versions.
 
 When you are ready to install, Then rename `samconfig.toml.example` to `samconfig.toml`, obtain your SSO temporary credentials from the login screen and paste them into your terminal. 
 
