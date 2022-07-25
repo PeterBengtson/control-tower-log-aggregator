@@ -107,7 +107,7 @@ This application handles storage classes and class changes in the following way:
 As the application deletes the original files after having aggregated them into larger files,
 the vast majority of your processed recent log files will be in STANDARD_IA, not in STANDARD. 
 Originals using STANDARD only live for a day. This also results in substantial cost savings, 
-even before the transition to DEEP_ARCHIVE is done. STANDARD_IA is about half the price of STANDARD.
+as STANDARD_IA is about half the price of STANDARD.
 
 ### Log File Combination Algorithm
 AWS S3 surprisingly offers no built-in support for concatenating files of any sort. This is always
