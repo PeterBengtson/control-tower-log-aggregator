@@ -132,7 +132,7 @@ as a starting point for each aggregation. It then adds one file at a time to the
 all component files have been aggregated. This is possible because multipart uploads, whilst requiring
 that all files but the last are 5 MB or greater, allow the last file to be any size. 
 As the aggregation is done in place in a dedicated scratch pad bucket, the process is fast even 
-though an upload is done for each component log file. S3 is a high-capacity storage engine that
+though a multipart upload is done for each component log file. S3 is a high-capacity storage engine that
 really can take a pounding - it's designed for this sort of thing.
 
 
