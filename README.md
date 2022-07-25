@@ -40,7 +40,8 @@ Prerequisites:
   Globals section in `template.yaml.`)
 
 Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Using a common
-destination bucket is strongly recommended as this provides the cleanest structure. It also allows the application to create a bucket configured for the purpose of optimising long-term storage from a cost perspective.
+destination bucket is strongly recommended as this provides the cleanest structure from an administration perspective. 
+It also allows the application to create a bucket configured for the purpose of optimising long-term storage from a cost perspective.
 
 Before you begin, I strongly recommend you to clean up your existing log buckets.
 This application processes log files from the previous day only, which means that files older than that
