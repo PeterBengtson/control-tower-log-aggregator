@@ -40,9 +40,9 @@ surprisingly often aren't aware of, only realising it post-fact when the AWS bil
 The cutoff lies around 200K. Below 200K, the savings in storage costs are outweighed by
 the class transfer costs and the storage cost of the extra added 40K. In other words,
 if you have a 1 GB file you transfer to Glacier, the overhead will be minimal and the cost
-savings manifest immediately. However, if you instead try to store the same 1 GB of data as
-1 million files of 1K in size, your total costs will increase by several magnitudes. There's a
-plethora of articles on the web about this; Google is your friend here. It's a known problem.
+savings manifest themselves immediately. However, if you instead try to store the same 1 GB 
+of data as 1 million files of 1K in size, your total costs will increase by several magnitudes. 
+There's a plethora of articles on the web about this; Google is your friend here. It's a known problem.
 
 ### The Solution
 This application runs every night, concatenating the log files from the previous day 
