@@ -1,7 +1,7 @@
 Comment: A state machine that combines log files.
-StartAt: Setup
+StartAt: Static Setup
 States:
-    Setup:
+    Static Setup:
         Type: Pass
         Parameters:
             ct_bucket_name: '${ControlTowerBucketName}'
@@ -10,9 +10,9 @@ States:
                 - CloudTrail-Digest
                 - Config
             bucket_names: '${OtherBucketNames}'
-        Next: Get Data
+        Next: Computed Setup
 
-    Get Data:
+    Computed Setup:
         Type: Task
         Resource: '${GetYesterdaysDateFunctionArn}'
         Retry:
@@ -41,12 +41,12 @@ States:
                                     - Lambda.ServiceException
                                     - Lambda.AWSLambdaException
                                     - Lambda.SdkClientException
-                        Next: Process System Logs
+                        Next: Process Accounts
 
-                    Process System Logs:
+                    Process Accounts:
                         Type: Map
                         ItemsPath: $.account_prefixes
-                        MaxConcurrency: 10
+                        MaxConcurrency: 10  # The number of accounts processed at a time
                         Parameters:
                             bucket_name.$: $.ct_bucket_name
                             date.$: $.date
@@ -54,9 +54,9 @@ States:
                             ct_log_types.$: $.ct_log_types
                         ResultPath: null
                         Iterator:
-                            StartAt: Process Main Logs
+                            StartAt: Process Main Log Types
                             States:
-                                Process Main Logs:
+                                Process Main Log Types:
                                     Type: Map
                                     ItemsPath: $.ct_log_types
                                     MaxConcurrency: 0
