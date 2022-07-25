@@ -58,10 +58,12 @@ transferred to Glacier (default 90 days), and the total number of days after whi
 expire altogether (default 3650 days).
 
 This application therefore handles storage class changes in the following way:
+
 1. STANDARD - this is the default storage class in which the vast majority of log files
    are originally created
 2. STANDARD_IA - all files produced by this application use this storage class
-3. GLACIER DEEP_ARCHIVE - the final storage class for log files >= 200K
+3. GLACIER DEEP_ARCHIVE - the final storage class for log files >= 200K.
+
 As the application deletes the original files after having aggregated them into larger files,
 the vast majority of your log files will be in STANDARD_IA. Originals only live for a day, 
 after which they are permanently deleted.
