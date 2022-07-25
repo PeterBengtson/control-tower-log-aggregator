@@ -51,11 +51,17 @@ of cases, in files larger than 200K. If configured to use a common destination b
 the application sets up long-term storage properly per combined log item, only transferring
 them to Glacier if they exceed the 200K limit, otherwise it simply leaves them in Standard_IA.
 
+The 200K limit is of course configurable.
 
+The daily main log files from Control Tower - CloudTrail, CloudTrail Digest, and Config logs -
+are processed per account. For each of the three log types, you get one combined log file per
+day. 
 
-
-
-
+The application can also aggregate log files from other types of log buckets in your Log Archive
+account, as long as they have parsable dates in their name/key/path. Such log buckets would
+typically include CloudWatch logs, load balancer logs, CloudFront logs, GuardDuty logs, and
+log bucket S3 access logs. These logs will be combined into one log file per day per bucket,
+not per account.
 
 
 ## Architecture
