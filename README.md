@@ -109,6 +109,19 @@ the vast majority of your processed recent log files will be in STANDARD_IA, not
 Originals using STANDARD only live for a day. This also results in cost savings, even before
 the transition to DEEP_ARCHIVE is done.
 
+### Log File Combination Algorithm
+AWS S3 surprisingly offers no built-in support for concatenating files of any sort. This is always
+left to the individual developer. The obvious brute-force approach of discretely reading each log
+file concatenating them together using a lambda or an instance doesn't scale well enough here and
+also presents problems when it comes to large log files and fairly conservative quotas for lambda 
+output. 
+
+It's also not ideal from a cost perspective as transfer costs will become significant. 
+There are also security implications stemming from the fact that logs may contain sensitive 
+information that never must end up in any other logs.
+
+
+
 
 ## Installation
 
