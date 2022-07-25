@@ -60,8 +60,7 @@ expire altogether (default 3650 days).
 The application can also aggregate log files from other types of log buckets in your Log Archive
 account, as long as they have parsable dates in their name/key/path. Such log buckets would
 typically include CloudWatch logs, load balancer logs, CloudFront logs, GuardDuty logs, and
-log bucket S3 access logs, but they may be anything. These logs will be combined into one log 
-file per day per bucket, not per account.
+log bucket S3 access logs, but they may be anything.
 
 The file size problem is one that needs to be solved in any system required to store logs for
 a long time. There seems to be a remarkable lack of solutions to this problem, given that every
