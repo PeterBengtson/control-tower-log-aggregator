@@ -15,6 +15,10 @@ This is a serverless solution, meaning there are no instances or clusters to
 maintain. Also, all copying is done entirely within S3, without down- or uploading 
 log files, something which is of importance when the volume of log files is large.
 
+If you are running Control Tower v2.8 or 2.9, this application also provides a 
+workaround for a misconfiguration of the standard install Control Tower access log 
+bucket. You may have many millions of log files you really don't need in there, 
+so if you are running Control Tower v2.8 or v2.9, do check.
 
 ## Background
 
