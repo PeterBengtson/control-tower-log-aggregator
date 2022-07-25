@@ -33,7 +33,9 @@ Prerequisites:
 
 Obtain your SSO temporary credentials from the login screen and paste them into your terminal.
 
-Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Then rename `samconfig.toml.example` to `samconfig.toml`. Then do a:
+Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Then rename `samconfig.toml.example` to `samconfig.toml`. 
+
+Next, do a:
 ```
 sam build
 ```
