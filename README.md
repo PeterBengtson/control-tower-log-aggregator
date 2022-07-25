@@ -57,10 +57,6 @@ The 200K limit is of course configurable, as is the number of days before log fi
 transferred to Glacier (default 90 days), and the total number of days after which data is to 
 expire altogether (default 3650 days).
 
-The daily main log files from Control Tower - CloudTrail, CloudTrail Digest, and Config logs -
-are processed per account. For each of the three log types, you get one combined log file per
-day and account. 
-
 The application can also aggregate log files from other types of log buckets in your Log Archive
 account, as long as they have parsable dates in their name/key/path. Such log buckets would
 typically include CloudWatch logs, load balancer logs, CloudFront logs, GuardDuty logs, and
