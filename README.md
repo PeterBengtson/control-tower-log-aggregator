@@ -83,13 +83,14 @@ Control Tower log bucket is processed in parallel with the auxiliary log buckets
 
 The main logs are processed 10 accounts at a time, and in each account, the three main log types 
 (CloudTrail, CloudTrail Digest, and Config) are in their turn processed in parallel. 
-Thus a total of 30 main log files are processed in parallel at any given time. 
+Thus a maximum of 30 main log files are processed in parallel at any given time. 
 
 The number of accounts processed at a time can be changed in the `combine_log_files.asl.yaml` 
 configuration file; look for `Process Accounts` and then `MaxConcurrency` which has a value of 10. 
 (It can unfortunately not be parametrised.)
 
-The number of auxiliary log buckets processed at a time can likewise be changed in `Process Other Logs`.
+The number of auxiliary log buckets processed at a time (also 10) can likewise be changed in 
+`Process Other Logs`.
 
 ### Storage Classes
 This application handles storage classes and class changes in the following way:
