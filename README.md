@@ -53,7 +53,9 @@ of cases, in files larger than 200K. If configured to use a common destination b
 the application sets up long-term storage properly per combined log item, only transferring
 them to Glacier if they exceed the 200K limit, otherwise it simply leaves them in Standard_IA.
 
-The 200K limit is of course configurable.
+The 200K limit is of course configurable, as is the number of days before log files are 
+transferred to Glacier (default 90 days), and the total number of days after which data is to 
+expire altogether (default 3650 days).
 
 The daily main log files from Control Tower - CloudTrail, CloudTrail Digest, and Config logs -
 are processed per account. For each of the three log types, you get one combined log file per
