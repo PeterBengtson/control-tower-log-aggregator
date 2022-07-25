@@ -63,6 +63,13 @@ typically include CloudWatch logs, load balancer logs, CloudFront logs, GuardDut
 log bucket S3 access logs, but they may be anything. These logs will be combined into one log 
 file per day per bucket, not per account.
 
+The file size problem is one that needs to be solved in any system required to store logs for
+a long time. There seems to be a remarkable lack of solutions to this problem, given that every
+system needs to collect various types of logs from member accounts and store them in a central
+log archive. The few solutions I have seen out there also involve running and maintaining 
+instances or containers, which nowadays is clunky and expensive old tech. This solution is entirely 
+serverless.
+
 
 ## Architecture
 
