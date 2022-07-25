@@ -60,8 +60,8 @@ day and account.
 The application can also aggregate log files from other types of log buckets in your Log Archive
 account, as long as they have parsable dates in their name/key/path. Such log buckets would
 typically include CloudWatch logs, load balancer logs, CloudFront logs, GuardDuty logs, and
-log bucket S3 access logs. These logs will be combined into one log file per day per bucket,
-not per account.
+log bucket S3 access logs, but they may be anything. These logs will be combined into one log 
+file per day per bucket, not per account.
 
 
 ## Architecture
