@@ -27,7 +27,7 @@ TODO
 
 The Step Function has the following structure:
 
-<img src="https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true." width="400"/>
+<img src="https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true." width="500"/>
 
 ## Installation
 
