@@ -19,7 +19,7 @@ log files, something which is of importance when the volume of log files is larg
 ## Background
 
 Computer logs vary significantly in size from system to system, from log type to log
-type, and even from day to day. The span from a few hundred bytes to several gigabytes
+type, and even from day to day. They span from a few hundred bytes to several gigabytes
 in size. This is in itself not a problem, as you pay per byte on AWS. 
 
 However, if you need to keep your logs around for a long time,
