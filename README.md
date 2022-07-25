@@ -50,7 +50,7 @@ to keep them.
 This application will have no problems processing standard log files - CloudTrail, CloudTrail Digest, Config -
 no matter how many files are in the main Control Tower log bucket. With the buckets listed in `OtherBuckets` 
 however, all log names must be processed every time and then filtered on the correct date, so make sure they 
-don't contain millions of log files or the get_files lambda may time out. If you can, empty these buckets 
+don't contain millions of log files or the `get_files` lambda may time out. If you can, empty these buckets 
 from all versions of all objects. This is easily done in the console using the Empty button or using the CLI.
 
 If any log files are encrypted with KMS keys from other accounts, make sure the originating accounts allow the
