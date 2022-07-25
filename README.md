@@ -18,7 +18,26 @@ log files, something which is of importance when the volume of log files is larg
 
 ## Background
 
-TODO
+Computer logs vary significantly in size from system to system, from log type to log
+type, and even from day to day. The span from a few hundred bytes to several gigabytes
+in size. This is in itself not a problem, as you pay per byte on AWS. 
+
+However, if you need to keep your logs around for a long time,
+size issues will become a very tangible problem when trying to reduce costs
+by moving logs to Glacier deep storage. The reason for this is that 40K of extra storage
+is added _to each log file_ in the process and that there are fairly high transfer costs, 
+again per file, associated with moving files to permanent deep storage in Glacier. 
+Furthermore, there are corresponding costs associated with retrieving items from Glacier, 
+once again per file.
+
+This means that there is a cutoff below which it is a very bad idea to store files in Glacier.
+In fact, doing so may increase S3 costs dramatically, to the point where Glacier
+becomes much more expensive than just leaving the files in Standard or Standard IA. It's
+not a "slight increase" either, we're talking magnitudes. This is something that engineers
+surprisingly often aren't aware of, only realising it post-fact when the AWS bill arrives.
+
+
+
 
 
 ## Architecture
@@ -50,7 +69,7 @@ will remain where and as they are. You need to decide what to do with them if yo
 to keep them.
 
 This application will have no problems processing standard log files - CloudTrail, CloudTrail Digest, Config -
-no matter how many files are in the main Control Tower log bucket. With the buckets listed in `OtherBuckets` 
+no matter how many files there are in the main Control Tower log bucket. With the buckets listed in `OtherBuckets` 
 however, all log names must be processed every time and then filtered on the correct date, so make sure they 
 don't contain millions of log files or the `get_files` lambda may time out. If you can, empty these buckets 
 from all versions of all objects. This is easily done in the console using the Empty button or using the CLI.
