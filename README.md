@@ -48,9 +48,10 @@ will remain where and as they are. You need to decide what to do with them if yo
 to keep them.
 
 This application will have no problems processing standard log files - CloudTrail, CloudTrail Digest, Config -
-no matter how many files are in the bucket. With the buckets listed in `OtherBuckets` however, all log names
-must be read every time and then filtered on the correct date, so make sure they do not contain millions of
-log files, or the concatenation lambda may time out. If you can, do a full delete, including all versions.
+no matter how many files are in the main Control Tower log bucket. With the buckets listed in `OtherBuckets` 
+however, all log names must be processed every time and then filtered on the correct date, so make sure they 
+don't contain millions of log files or the concatenation lambda may time out. If you can, empty these buckets 
+from all versions of all objects. This is easily done in the console using the Empty button or using the CLI.
 
 If you have Control Tower version 2.8 or 2.9 installed, clean out the entire contents of the Control Tower log bucket
 access log bucket (which has a name similar to `aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1`) 
