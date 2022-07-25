@@ -121,7 +121,7 @@ information that never must end up in any other logs. So the less the contents o
 are touched in any way, the better.
 
 There is one way in which data can be copied in place within S3, however, and that is by leveraging 
-so-called multipart uploads. They are parallel in nature and are done entirely within the service, 
+so-called multipart uploads. They are done entirely within the service, 
 thus avoiding shuffling data to and from lambdas or instances altogether. However, multipart uploads 
 require all files except the last one in the list of files to be 5 MB in size or larger, something
 we can never guarantee with log files which may be as small as a few hundred bytes in size.
