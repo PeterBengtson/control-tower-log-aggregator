@@ -112,15 +112,28 @@ the transition to DEEP_ARCHIVE is done.
 ### Log File Combination Algorithm
 AWS S3 surprisingly offers no built-in support for concatenating files of any sort. This is always
 left to the individual developer. The obvious brute-force approach of discretely reading each log
-file concatenating them together using a lambda or an instance doesn't scale well enough here and
-also presents problems when it comes to large log files and fairly conservative quotas for lambda 
-output. 
+file, concatenating them together using a lambda or an instance doesn't scale well enough here and
+also presents problems when it comes to large log files, memory sizes, and the fairly conservative 
+maximum size for lambda output. 
 
-It's also not ideal from a cost perspective as transfer costs will become significant. 
+It's also not ideal from a cost perspective as transfer costs and times will become significant. 
 There are also security implications stemming from the fact that logs may contain sensitive 
-information that never must end up in any other logs.
+information that never must end up in any other logs. So the less the contents of the log files
+are touched in any way, the better.
 
+There is one way in which data can be copied in place within S3, however, and that is by leveraging 
+so-called multipart uploads. They are parallel in nature and are done entirely within the service, 
+thus avoiding shuffling data to and from lambdas or instances altogether. However, multipart uploads 
+require all files except the last one in the list of files to be 5 MB in size or larger, something
+we can never guarantee with log files which may be as small as a few hundred bytes in size.
 
+To get around the 5 MB limitation, the application first creates a 5 MB dummy file to use
+as a starting point for each aggregation. It then adds one file at a time to the dummy file until
+all component files have been aggregated. This is possible because multipart uploads, whilst requiring
+that all files but the last are 5 MB or greater, allow the last file to be any size. 
+As the aggregation is done in place in a dedicated scratch pad bucket, the process is fast even 
+though an upload is done for each component log file. S3 is a high-capacity storage engine that
+really can take a pounding - it's designed for this sort of thing.
 
 
 ## Installation
