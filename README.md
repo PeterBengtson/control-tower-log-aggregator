@@ -124,7 +124,7 @@ There is one way in which data can be copied in place within S3, however, and th
 so-called multipart uploads. They are done entirely within the service, 
 thus avoiding shuffling data to and from lambdas or instances altogether. However, multipart uploads 
 require all files except the last one in the list of files to be 5 MB in size or larger, something
-we can never guarantee with log files which may be as small as a few hundred bytes in size.
+we can never guarantee with log files.
 
 To get around the 5 MB limitation, the application first creates a 5 MB dummy file to use
 as a starting point. It then adds one file at a time until all component files have been aggregated. 
