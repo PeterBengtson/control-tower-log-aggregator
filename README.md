@@ -51,11 +51,20 @@ the Standard Infrequent Access (STANDARD_IA) storage class to further reduce cos
 The original files are deleted (with all their versions). This results, in the vast majority 
 of cases, in files larger than 200K. If configured to use a common destination bucket, 
 the application sets up long-term storage properly per combined log item, only transferring
-them to Glacier if they exceed the 200K limit, otherwise it simply leaves them in Standard_IA.
+them to Glacier if they exceed the 200K limit, otherwise it simply leaves them in STANDARD_IA.
 
 The 200K limit is of course configurable, as is the number of days before log files are 
 transferred to Glacier (default 90 days), and the total number of days after which data is to 
 expire altogether (default 3650 days).
+
+This application therefore handles storage class changes in the following way:
+1. STANDARD - this is the default storage class in which the vast majority of log files
+   are originally created
+2. STANDARD_IA - all files produced by this application use this storage class
+3. GLACIER DEEP_ARCHIVE - the final storage class for log files >= 200K
+As the application deletes the original files after having aggregated them into larger files,
+the vast majority of your log files will be in STANDARD_IA. Originals only live for a day, 
+after which they are permanently deleted.
 
 The daily main log files from Control Tower - CloudTrail, CloudTrail Digest, and Config logs -
 are processed per account. For each of the three log types, you get one combined log file per
@@ -77,11 +86,11 @@ serverless.
 
 ## Architecture
 
-TODO
-
-The Step Function has the following structure:
+Every night at 1 AM, an AWS Step Function is triggered to process the log files produced for the 
+last day. It has the following structure:
 
 <img src="https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true." width="500"/>
+
 
 
 ## Installation
