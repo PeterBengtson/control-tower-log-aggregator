@@ -53,6 +53,9 @@ however, all log names must be processed every time and then filtered on the cor
 don't contain millions of log files or the concatenation lambda may time out. If you can, empty these buckets 
 from all versions of all objects. This is easily done in the console using the Empty button or using the CLI.
 
+If the log files are encrypted with KMS keys from other accounts, make sure the originating accounts allow the
+Log Archive to use them.
+
 If you have Control Tower version 2.8 or 2.9 installed, clean out the entire contents of the Control Tower log bucket
 access log bucket (which has a name similar to `aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1`) 
 right before you begin installation of this application.
