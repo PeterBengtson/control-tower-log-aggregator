@@ -40,8 +40,20 @@ The cutoff lies around 200K. Below 200K, the savings in storage costs is outweig
 the storage class transfer costs and the storage cost of the extra added 40K. In other words,
 if you have a 1 GB file you transfer to Glacier, the overhead will be minimal and the cost
 savings manifest immediately. However, if you instead try to store the same 1 GB of data as
-1 million files of 1K in size, your costs will increase by several magnitudes. There's a
+1 million files of 1K in size, your total costs will increase by several magnitudes. There's a
 plethora of articles on the web about this; Google is your friend here. It's a known problem.
+
+This application runs every night, concatenating the log files from the previous day 
+into larger files more suited for Glacier storage. It also saves these new larger files in 
+the Standard Infrequent Access (STANDARD_IA) storage class to further reduce costs. 
+The original files are deleted (with all their versions). This results, in the vast majority 
+of cases, in files larger than 200K. If configured to use a common destination bucket, 
+the application sets up long-term storage properly per combined log item, only transferring
+them to Glacier if they exceed the 200K limit, otherwise it simply leaves them in Standard_IA.
+
+
+
+
 
 
 
