@@ -18,6 +18,7 @@ log files, something which is of importance when the volume of log files is larg
 
 ## Background
 
+### The Problem 
 Computer logs vary significantly in size from system to system, from log type to log
 type, and even from day to day. They span from a few hundred bytes to several gigabytes
 in size. This is in itself not a problem, as you pay per byte on AWS. 
@@ -43,6 +44,7 @@ savings manifest immediately. However, if you instead try to store the same 1 GB
 1 million files of 1K in size, your total costs will increase by several magnitudes. There's a
 plethora of articles on the web about this; Google is your friend here. It's a known problem.
 
+### The Solution
 This application runs every night, concatenating the log files from the previous day 
 into larger files more suited for Glacier storage. It also saves these new larger files in 
 the Standard Infrequent Access (STANDARD_IA) storage class to further reduce costs. 
