@@ -31,11 +31,11 @@ Prerequisites:
 * Python 3.8 (if you have another version installed, change the default in the
   Globals section in `template.yaml.`)
 
-Obtain your SSO temporary credentials from the login screen and paste them into your terminal.
+Take a look at the Parameters section in `template.yaml` for an explanation of the parameters.  
 
-Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Then rename `samconfig.toml.example` to `samconfig.toml`. 
+When you are ready to install, Then rename `samconfig.toml.example` to `samconfig.toml`, obtain your SSO temporary credentials from the login screen and paste them into your terminal. 
 
-Next, do a:
+Next, enter:
 ```
 sam build
 ```
@@ -45,11 +45,12 @@ sam deploy --guided
 ```
 This will guide you interactively through setting the parameter overrides and then deploy the log aggregation application.
 
-Next time you need to deploy or update, simply do a:
+Next time you need to deploy or update the application, simply do a:
 ```
 sam build && sam deploy
 ```
 If you need to change the parameter overrides, you can do so by running `sam deploy --guided` again, or you can simply change the overrides in `samconfig.toml` and just build and deploy using the shorter form given above.
+
 
 ## architecture
 
