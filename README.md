@@ -71,7 +71,7 @@ a long time. There seems to be a remarkable lack of solutions to this problem, g
 system needs to collect various types of logs from member accounts and store them in a central
 log archive. The few solutions I have seen out there also involve running and maintaining 
 instances or containers, which nowadays is clunky and expensive old tech for Foundation level
-tasks such as this. This solution is entirely serverless.
+tasks such as this. This solution, on the other hand, is entirely serverless.
 
 
 ## Architecture
