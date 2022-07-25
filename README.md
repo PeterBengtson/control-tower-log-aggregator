@@ -24,7 +24,7 @@ in size. This is in itself not a problem, as you pay per byte on AWS.
 
 However, if you need to keep your logs around for a long time,
 size issues will become a very tangible problem when trying to reduce costs
-by moving logs to Glacier deep storage. The reason for this is that 40K of extra storage
+by moving logs to Glacier deep storage. The reason for this is that 40K of extra metadata
 is added _to each log file_ in the process and that there are fairly high transfer costs, 
 again per file, associated with moving files to permanent deep storage in Glacier. 
 Furthermore, there are corresponding costs associated with retrieving items from Glacier, 
