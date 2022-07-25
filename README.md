@@ -37,8 +37,8 @@ becomes much more expensive than just leaving the files in Standard or Standard 
 not a "slight increase" either, we're talking magnitudes. This is something that engineers
 surprisingly often aren't aware of, only realising it post-fact when the AWS bill arrives.
 
-The cutoff lies around 200K. Below 200K, the savings in storage costs is outweighed by
-the storage class transfer costs and the storage cost of the extra added 40K. In other words,
+The cutoff lies around 200K. Below 200K, the savings in storage costs are outweighed by
+the class transfer costs and the storage cost of the extra added 40K. In other words,
 if you have a 1 GB file you transfer to Glacier, the overhead will be minimal and the cost
 savings manifest immediately. However, if you instead try to store the same 1 GB of data as
 1 million files of 1K in size, your total costs will increase by several magnitudes. There's a
