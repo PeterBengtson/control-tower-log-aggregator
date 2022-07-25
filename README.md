@@ -44,7 +44,7 @@ no matter how many files are in the bucket. With the buckets listed in `OtherBuc
 must be read every time and then filtered on the correct date, so make sure they do not contain millions of
 log files, or the concatenation lambda may time out. If you can, do a full delete, including all versions.
 
-When you are ready to install, Then rename `samconfig.toml.example` to `samconfig.toml`, obtain your SSO temporary credentials from the login screen and paste them into your terminal. 
+When you are ready to install, rename `samconfig.toml.example` to `samconfig.toml`, obtain your SSO temporary credentials from the login screen and paste them into your terminal. 
 
 Next, enter:
 ```
