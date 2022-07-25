@@ -77,6 +77,7 @@ serverless.
 
 ## Architecture
 
+### The Step Function
 Every night at 1 AM, an AWS Step Function is triggered to process the log files produced for the 
 last day. It has the following structure:
 
