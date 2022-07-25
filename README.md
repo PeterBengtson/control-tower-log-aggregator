@@ -16,12 +16,12 @@ maintain. Also, all copying is done entirely within S3, without down- or uploadi
 anything, something which is of importance when the volume of log files is large.
 
 
-## background
+## Background
 
 TODO
 
 
-## architecture
+## Architecture
 
 TODO
 
@@ -29,7 +29,7 @@ The Step Function has the following structure:
 
 <img src="https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true." width="400"/>
 
-## installation
+## Installation
 
 Install in the Log Archive account, in your main region.
 
