@@ -39,7 +39,7 @@ sam build
 ```
 followed by a first deployment command of:
 ```
-sam deploy --guided --config-file=samconfig.toml
+sam deploy --guided
 ```
 This will guide you interactively through setting the parameter overrides and then deploy the log aggregation application.
 
@@ -47,7 +47,7 @@ Next time you need to deploy or update, simply do a:
 ```
 sam build && sam deploy
 ```
-If you need to change the parameter overrides, you can do so by running `sam deploy --guided --config-file=samconfig.toml` again, or you can simply change the overrides in `samconfig.toml` and just build and deploy using the shorter form given above.
+If you need to change the parameter overrides, you can do so by running `sam deploy --guided` again, or you can simply change the overrides in `samconfig.toml` and just build and deploy using the shorter form given above.
 
 ## architecture
 
