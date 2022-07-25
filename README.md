@@ -60,9 +60,7 @@ If you have Control Tower version 2.8 or 2.9 installed, clean out the entire con
 access log bucket (which has a name similar to `aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1`) 
 right before you begin installation of this application.
 
-When you are ready to install, rename `samconfig.toml.example` to `samconfig.toml`, obtain your SSO temporary credentials from the login screen and paste them into your terminal. 
-
-Next, enter:
+When you are ready to install, rename `samconfig.toml.example` to `samconfig.toml`, obtain your SSO temporary credentials from the login screen and paste them into your terminal, then enter:
 ```
 sam build
 ```
