@@ -110,7 +110,7 @@ as STANDARD_IA is about half the price of STANDARD.
 
 ### Log File Combination Algorithm
 AWS S3 surprisingly offers no built-in support for concatenating files of any sort. This is always
-left to the individual developer. The obvious brute-force approach of discretely reading each log
+left to the individual developer. The obvious brute-force approach of reading each log
 file, concatenating them together using a lambda or an instance doesn't scale well enough here and
 also presents problems when it comes to large log files, memory sizes, and the fairly conservative 
 maximum size for lambda output. 
@@ -121,16 +121,18 @@ information that never must end up in any other logs. So the less the contents o
 are touched in any way, the better.
 
 There is one way in which data can be copied in place within S3, however, and that is by leveraging 
-so-called multipart uploads. They are done entirely within the service, 
+so-called multipart uploads. They can be done entirely within the S3 service, 
 thus avoiding shuffling data to and from lambdas or instances altogether. However, multipart uploads 
 require all files except the last one in the list of files to be 5 MB in size or larger, something
 we can never guarantee with log files.
 
 To get around the 5 MB limitation, the application first creates a 5 MB dummy file to use
 as a starting point. It then adds one file at a time until all component files have been aggregated. 
-This is possible because multipart uploads, whilst requiring that all files but the last are 5 MB 
-or greater, allow the last file to be any size. When all log files have been added, a final result file is 
-produced by making a copy of the aggregation file, but without the initial 5 MB of dummy data.
+This is possible because multipart uploads require all files to be >= 5 MB - except the last one which
+can be any size. 
+
+When all log files have been added, a final result file is produced by making a copy of the 
+aggregation file to the final destination, but without the initial 5 MB of dummy data.
 
 As the aggregation is done in place in a dedicated scratch pad bucket, the process is fast even 
 though a multipart upload is done for each component log file. S3 is a high-capacity storage engine that
