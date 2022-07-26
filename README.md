@@ -101,7 +101,7 @@ This application handles storage classes and class changes in the following way:
 1. STANDARD - this is the default storage class in which the vast majority of log files
    are originally created
 2. STANDARD_IA - all files produced by this application use this storage class
-3. GLACIER DEEP_ARCHIVE - the final storage class for log files >= 200K.
+3. DEEP_ARCHIVE - the final storage class in Glacier for log files >= 200K.
 
 As the application deletes the original files after having aggregated them into larger files,
 the vast majority of your processed recent log files will be in STANDARD_IA, not in STANDARD. 
