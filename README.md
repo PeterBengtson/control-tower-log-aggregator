@@ -104,7 +104,7 @@ This application handles storage classes and class changes in the following way:
 3. DEEP_ARCHIVE - the final storage class in Glacier for log files >= 200K.
 
 As the application deletes the original files after having aggregated them into larger files,
-the vast majority of your processed recent log files will be in STANDARD_IA, not in STANDARD. 
+the vast majority of all recent log files will be in STANDARD_IA, not in STANDARD. 
 Originals using STANDARD only live for a day. This also results in substantial cost savings, 
 as STANDARD_IA is about half the price of STANDARD.
 
