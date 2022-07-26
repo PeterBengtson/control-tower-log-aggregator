@@ -118,7 +118,7 @@ maximum size for lambda output.
 It's also not ideal from a cost perspective as transfer costs and times will become significant. 
 There are also security implications stemming from the fact that logs may contain sensitive 
 information that never must end up in any other logs. So the less the contents of the log files
-are in transit, the better.
+is in transit, the better.
 
 There is one way in which data can be copied in place within S3, however, and that is by leveraging 
 so-called multipart uploads. They can be done entirely within the S3 service, 
