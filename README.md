@@ -127,12 +127,10 @@ require all files except the last one in the list of files to be 5 MB in size or
 we can never guarantee with log files.
 
 To get around the 5 MB limitation, the application first creates a 5 MB dummy file to use
-as a starting point. It then adds one file at a time until all component files have been aggregated. 
-This is possible because multipart uploads require all files to be >= 5 MB - except the last one which
-can be any size. 
+as a starting point. It then adds one file at a time until all component files have been aggregated.  
 
-When all log files have been added, a final result file is produced by making a copy of the 
-aggregation file to the final destination, but without the initial 5 MB of dummy data.
+When all log files have been added, a final result file is produced by making a last multi-part upload
+of the aggregation file to the final destination, but without the initial 5 MB of dummy data.
 
 As the aggregation is done in place in a dedicated scratch pad bucket, the process is fast even 
 though a multipart upload is done for each component log file. S3 is a high-capacity storage engine that
