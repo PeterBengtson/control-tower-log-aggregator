@@ -127,7 +127,7 @@ require all files except the last one in the list of files to be 5 MB in size or
 we can never guarantee with log files.
 
 To get around the 5 MB limitation, the application first creates a 5 MB dummy file to use
-as a starting point. It then adds one file at a time to that fle until all component files have been 
+as a starting point. It then adds one file at a time to that file until all component files have been 
 aggregated.  
 
 When all log files have been added, a final result file is produced by making a last multi-part upload
