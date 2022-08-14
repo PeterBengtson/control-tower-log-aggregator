@@ -171,17 +171,17 @@ access log bucket (which has a name similar to `aws-controltower-s3-access-logs-
 right before you begin installation of this application.
 
 When you are ready to install, rename `samconfig.toml.example` to `samconfig.toml`, obtain your SSO temporary credentials from the login screen and paste them into your terminal, then enter:
-```
+```console
 sam build
 ```
 followed by a first deployment command of:
-```
+```console
 sam deploy --guided
 ```
 This will guide you interactively through setting the parameter overrides and then deploy the log aggregation application.
 
 Next time you need to deploy or update the application, simply do a:
-```
+```console
 sam build && sam deploy
 ```
 If you need to change the parameter overrides, you can do so by running `sam deploy --guided` again, or you can simply change the overrides in `samconfig.toml` and just build and deploy using the shorter form given above.
