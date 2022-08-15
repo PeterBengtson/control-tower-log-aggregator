@@ -18,7 +18,7 @@ log files, something which is of importance when the volume of log files is larg
 If you are running Control Tower v2.8, 2.9, or 3.0, this application also provides a 
 workaround for a pretty serious AWS misconfiguration of the standard install 
 Control Tower access log bucket. You may have many millions of log files you really 
-don't need in there, so if you are running Control Tower v2.8, v2.9, or v3.0, do check.
+don't need in there, so if you are running Control Tower v2.8 or later, do check.
 
 ## Background
 
@@ -166,7 +166,7 @@ from all versions of all objects. This is easily done in the console using the E
 If any log files are encrypted with KMS keys from other accounts, make sure the originating accounts allow the
 Log Archive account to use them.
 
-If you have Control Tower version 2.8, 2.9, or 3.0 installed, clean out the entire contents of the Control Tower log bucket
+If you have Control Tower version 2.8 or later installed, clean out the entire contents of the Control Tower log bucket
 access log bucket (which has a name similar to `aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1`) 
 right before you begin installation of this application.
 
