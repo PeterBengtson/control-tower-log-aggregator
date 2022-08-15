@@ -166,7 +166,7 @@ from all versions of all objects. This is easily done in the console using the E
 If any log files are encrypted with KMS keys from other accounts, make sure the originating accounts allow the
 Log Archive account to use them.
 
-If you have Control Tower version 2.8 or 2.9 installed, clean out the entire contents of the Control Tower log bucket
+If you have Control Tower version 2.8, 2.9, or 3.0 installed, clean out the entire contents of the Control Tower log bucket
 access log bucket (which has a name similar to `aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1`) 
 right before you begin installation of this application.
 
