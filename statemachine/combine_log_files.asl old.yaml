@@ -10,11 +10,11 @@ States:
                 - CloudTrail-Digest
                 - Config
             bucket_names: '${OtherBucketNames}'
-        Next: Dynamic Setup
+        Next: Computed Setup
 
-    Dynamic Setup:
+    Computed Setup:
         Type: Task
-        Resource: '${DynamicSetupFunctionArn}'
+        Resource: '${GetYesterdaysDateFunctionArn}'
         Retry:
             -
                 ErrorEquals:

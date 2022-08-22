@@ -164,7 +164,7 @@ Resources:
     Properties:
       DefinitionUri: statemachine/combine_log_files.asl.yaml
       DefinitionSubstitutions:
-        GetYesterdaysDateFunctionArn: !GetAtt GetYesterdaysDateFunction.Arn
+        DynamicSetupFunctionArn: !GetAtt DynamicSetupFunction.Arn
         GetFilesFunctionArn: !GetAtt GetFilesFunction.Arn
         DetermineArchiveKeyFunctionArn: !GetAtt DetermineArchiveKeyFunction.Arn
         CombineLogFilesFunctionArn: !GetAtt CombineLogFilesFunction.Arn
@@ -183,7 +183,7 @@ Resources:
             Schedule: "cron(0 1 * * ? *)"
       Policies:
         - LambdaInvokePolicy:
-            FunctionName: !Ref GetYesterdaysDateFunction
+            FunctionName: !Ref DynamicSetupFunction
         - LambdaInvokePolicy:
             FunctionName: !Ref GetFilesFunction
         - LambdaInvokePolicy:
@@ -240,10 +240,10 @@ Resources:
           DEST_LOGS_BUCKET_NAME: !If [UseCommonDestinationBucket, !Ref CommonDestinationBucket, '']
 
 
-  GetYesterdaysDateFunction:
+  DynamicSetupFunction:
     Type: AWS::Serverless::Function 
     Properties:
-      CodeUri: functions/get_yesterdays_date/
+      CodeUri: functions/dynamic_setup/
 
 
   DetermineArchiveKeyFunction:
