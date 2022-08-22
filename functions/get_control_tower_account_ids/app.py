@@ -13,18 +13,23 @@ def lambda_handler(data, _context):
     client.head_bucket(Bucket=bucket_name)
     print("Bucket exists.")
 
-    print(f"Checking whether the CloudTrail log structure is that from Control Tower v3.0 or higher...")
+    ct_log_type = data['ct_log_type']
+    print(f"Processing {ct_log_type} logs...")
 
-    prefix = f'{ORG_ID}/AWSLogs/{ORG_ID}/'
-    response = client.list_objects_v2(
-        Bucket=bucket_name,
-        Delimiter='/',
-        Prefix=prefix
-    )
-    account_prefixes = list(map(lambda x: x['Prefix'], response['CommonPrefixes']))
-    if account_prefixes:
-        print(f"Version 3.0+ detected: logs found under {prefix}.")
-        return account_prefixes
+    if ct_log_type in ['CloudTrail', 'CloudTrail-Digest']:
+        print(f"Checking whether the {ct_log_type} log structure is that of Control Tower v3.0 or higher...")
+
+        prefix = f'{ORG_ID}/AWSLogs/{ORG_ID}/'
+        response = client.list_objects_v2(
+            Bucket=bucket_name,
+            Delimiter='/',
+            Prefix=prefix
+        )
+        account_prefixes = list(map(lambda x: x['Prefix'], response['CommonPrefixes']))
+        if account_prefixes:
+            print(f"Version 3.0+ detected: logs found under {prefix}.")
+            return account_prefixes
+        print(f"No logs found under {prefix}, assuming Control Tower < v3.0.")
 
     prefix = f'{ORG_ID}/AWSLogs/'
     response = client.list_objects_v2(

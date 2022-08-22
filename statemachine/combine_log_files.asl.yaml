@@ -66,9 +66,9 @@ States:
                                         ct_log_types.$: $.ct_log_types
                                     ResultPath: null
                                     Iterator:
-                                        StartAt: Get Regions
+                                        StartAt: Get Used Regions
                                         States:
-                                            Get Regions:
+                                            Get Used Regions:
                                                 Type: Task
                                                 Resource: '${GetRegionsFunctionArn}'
                                                 ResultPath: $.region_prefixes
