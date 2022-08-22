@@ -27,44 +27,43 @@ States:
     Process All Logs:
         Type: Parallel
         Branches:
-            - 
-                StartAt: Get Control Tower Account IDs
+            -
+                StartAt: Process Main Log Types
                 States:
-                    Get Control Tower Account IDs:
-                        Type: Task
-                        Resource: '${GetControlTowerAccountIDsFunctionArn}'
-                        ResultPath: $.account_prefixes
-                        Retry:
-                            -
-                                ErrorEquals:
-                                    - States.Timeout
-                                    - Lambda.ServiceException
-                                    - Lambda.AWSLambdaException
-                                    - Lambda.SdkClientException
-                        Next: Process Accounts
-
-                    Process Accounts:
+                    Process Main Log Types:
                         Type: Map
-                        ItemsPath: $.account_prefixes
-                        MaxConcurrency: 10  # The number of accounts processed at a time
+                        ItemsPath: $.ct_log_types
+                        MaxConcurrency: 1
                         Parameters:
-                            bucket_name.$: $.ct_bucket_name
+                            bucket_name.$: $.bucket_name
                             date.$: $.date
-                            prefix.$: $$.Map.Item.Value
-                            ct_log_types.$: $.ct_log_types
+                            ct_log_type.$: $$.Map.Item.Value
                         ResultPath: null
                         Iterator:
-                            StartAt: Process Main Log Types
+                            StartAt: Get Control Tower Account IDs
                             States:
-                                Process Main Log Types:
+                                Get Control Tower Account IDs:
+                                    Type: Task
+                                    Resource: '${GetControlTowerAccountIDsFunctionArn}'
+                                    ResultPath: $.account_prefixes
+                                    Retry:
+                                        -
+                                            ErrorEquals:
+                                                - States.Timeout
+                                                - Lambda.ServiceException
+                                                - Lambda.AWSLambdaException
+                                                - Lambda.SdkClientException
+                                    Next: Process Accounts
+                                    
+                                Process Accounts:
                                     Type: Map
-                                    ItemsPath: $.ct_log_types
-                                    MaxConcurrency: 0
+                                    ItemsPath: $.account_prefixes
+                                    MaxConcurrency: 10  # The number of accounts processed at a time
                                     Parameters:
-                                        bucket_name.$: $.bucket_name
+                                        bucket_name.$: $.ct_bucket_name
                                         date.$: $.date
-                                        account_prefix.$: $.prefix
-                                        ct_log_type.$: $$.Map.Item.Value
+                                        prefix.$: $$.Map.Item.Value
+                                        ct_log_types.$: $.ct_log_types
                                     ResultPath: null
                                     Iterator:
                                         StartAt: Get Regions
@@ -135,6 +134,7 @@ States:
                                                 End: true
                                     End: true
                         End: true
+
             - 
                 StartAt: Process Other Logs
                 States:
