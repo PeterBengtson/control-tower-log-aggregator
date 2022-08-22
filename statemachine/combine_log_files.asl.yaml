@@ -4,7 +4,7 @@ States:
     Static Setup:
         Type: Pass
         Parameters:
-            ct_bucket_name: '${ControlTowerBucketName}'
+            bucket_name: '${ControlTowerBucketName}'
             ct_log_types:
                 - CloudTrail
                 - CloudTrail-Digest
@@ -33,11 +33,11 @@ States:
                     Process Main Log Types:
                         Type: Map
                         ItemsPath: $.ct_log_types
-                        MaxConcurrency: 1
+                        MaxConcurrency: 0
                         Parameters:
                             bucket_name.$: $.bucket_name
                             date.$: $.date
-                            ct_log_type.$: $$.Map.Item.Value
+                            log_type.$: $$.Map.Item.Value
                         ResultPath: null
                         Iterator:
                             StartAt: Get Control Tower Account IDs
@@ -60,10 +60,10 @@ States:
                                     ItemsPath: $.account_prefixes
                                     MaxConcurrency: 10  # The number of accounts processed at a time
                                     Parameters:
-                                        bucket_name.$: $.ct_bucket_name
+                                        bucket_name.$: $.bucket_name
+                                        log_type.$: $.log_type
                                         date.$: $.date
-                                        prefix.$: $$.Map.Item.Value
-                                        ct_log_types.$: $.ct_log_types
+                                        account_prefix.$: $$.Map.Item.Value
                                     ResultPath: null
                                     Iterator:
                                         StartAt: Get Used Regions

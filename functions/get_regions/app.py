@@ -6,8 +6,8 @@ client = boto3.client('s3')
 
 def lambda_handler(data, _context):
     bucket_name = data['bucket_name']
-    ct_log_type = data['ct_log_type']
-    prefix = data['account_prefix'] + ct_log_type + '/'
+    log_type = data['log_type']
+    prefix = data['account_prefix'] + log_type + '/'
 
     response = client.list_objects_v2(
         Bucket=bucket_name,

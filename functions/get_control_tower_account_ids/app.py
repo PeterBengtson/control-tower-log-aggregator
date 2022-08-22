@@ -7,17 +7,17 @@ ORG_ID = os.environ['ORG_ID']
 client = boto3.client('s3')
 
 def lambda_handler(data, _context):
-    bucket_name = data['ct_bucket_name']
+    bucket_name = data['bucket_name']
 
     print(f"Checking existence of {bucket_name}...")
     client.head_bucket(Bucket=bucket_name)
     print("Bucket exists.")
 
-    ct_log_type = data['ct_log_type']
-    print(f"Processing {ct_log_type} logs...")
+    log_type = data['log_type']
+    print(f"Processing {log_type} logs...")
 
-    if ct_log_type in ['CloudTrail', 'CloudTrail-Digest']:
-        print(f"Checking whether the {ct_log_type} log structure is that of Control Tower v3.0 or higher...")
+    if log_type in ['CloudTrail', 'CloudTrail-Digest']:
+        print(f"Checking whether the {log_type} log structure is that of Control Tower v3.0 or higher...")
 
         prefix = f'{ORG_ID}/AWSLogs/{ORG_ID}/'
         response = client.list_objects_v2(

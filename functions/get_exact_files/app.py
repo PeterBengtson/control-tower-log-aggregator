@@ -13,7 +13,7 @@ s3_resource = boto3.resource('s3')
 def lambda_handler(data, _context):
     bucket_name = data['bucket_name']
     prefixes = data['region_prefixes']
-    ct_log_type = data.get('ct_log_type', '')
+    ct_log_type = data.get('log_type', '')
     date = data['date']
     year, month, day = date.split('-')
     only_gz = True

@@ -25,7 +25,7 @@ def lambda_handler(data, _context):
     prefix = os.path.commonprefix(files).strip('-_')
     if not prefix:
         # No common prefix, use what we have
-        prefix = data.get('ct_log_type', 'Aggregated-Logs')
+        prefix = data.get('log_type', 'Aggregated-Logs')
 
     # If this is an S3 access log bucket, there's no gzip encryption
     bucket_name = data['bucket_name']
