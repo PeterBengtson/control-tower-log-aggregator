@@ -20,6 +20,10 @@ workaround for a pretty serious AWS misconfiguration of the standard install
 Control Tower access log bucket. You may have many millions of log files you really 
 don't need in there, so if you are running Control Tower v2.8 or later, do check.
 
+This application will recognise the changed file paths for Control Tower v3.0 or later
+and adapt accordingly.
+
+
 ## Background
 
 ### The Problem 
