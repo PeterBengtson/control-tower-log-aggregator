@@ -21,7 +21,7 @@ Control Tower access log bucket. You may have many millions of log files you rea
 don't need in there, so if you are running Control Tower v2.8 or later, do check.
 
 This application will recognise the changed file paths for Control Tower v3.0 or later
-and adapt accordingly. It is to be noted that the Control Tower team has change the
+and adapt accordingly. It is to be noted that the Control Tower team changed the
 file paths for _all_ log files in v3.0, not just for CloudTrail and CloudTrail-Digest,
 but also for Config logs. The latter, moreover, is an undocumented change.
 
