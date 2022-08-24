@@ -16,18 +16,23 @@ def lambda_handler(data, _context):
     ct_log_type = data.get('log_type', '')
     date = data['date']
     year, month, day = date.split('-')
-    only_gz = True
-
-    print(f"Getting files...")
-    objects = []
-    for raw_prefix in prefixes:
-        prefix = f'{raw_prefix}{year}/{month}/{day}'
-        objects.extend(list(s3_resource.Bucket(bucket_name).objects.filter(Prefix=prefix)))
-
-    print(f"Total number of files: {len(objects)}")
-
     month_trimmed = month.lstrip('0')
     day_trimmed = day.lstrip('0')
+
+    only_gz = True
+
+    objects = []
+    for raw_prefix in prefixes:
+        if ct_log_type == 'Config':
+            prefix = f'{raw_prefix}{year}/{month_trimmed}/{day_trimmed}'
+        else:
+            prefix = f'{raw_prefix}{year}/{month}/{day}'
+        print(f"Finding files with the prefix {prefix}")
+        fs = list(s3_resource.Bucket(bucket_name).objects.filter(Prefix=prefix))
+        objects.extend(fs)
+        
+    print(f"Total number of files found: {len(objects)}")
+
     date_forms = [
         f'{year}-{month}-{day}',
         f'{year}-{month_trimmed}-{day_trimmed}',
