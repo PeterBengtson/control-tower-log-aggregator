@@ -23,14 +23,15 @@ def lambda_handler(data, _context):
 
     objects = []
     for raw_prefix in prefixes:
-        if ct_log_type == 'Config':
-            prefix = f'{raw_prefix}{year}/{month_trimmed}/{day_trimmed}'
-        else:
-            prefix = f'{raw_prefix}{year}/{month}/{day}'
-        print(f"Finding files with the prefix {prefix}")
-        fs = list(s3_resource.Bucket(bucket_name).objects.filter(Prefix=prefix))
+        untrimmed_prefix = f'{raw_prefix}{year}/{month}/{day}'
+        trimmed_prefix = f'{raw_prefix}{year}/{month_trimmed}/{day_trimmed}'
+        print(f"Finding files with the prefix {untrimmed_prefix}")
+        fs = list(s3_resource.Bucket(bucket_name).objects.filter(Prefix=untrimmed_prefix))
+        if trimmed_prefix != untrimmed_prefix:
+            print(f"Also finding files with the prefix {trimmed_prefix}")
+            fs = list(s3_resource.Bucket(bucket_name).objects.filter(Prefix=trimmed_prefix))
         objects.extend(fs)
-        
+
     print(f"Total number of files found: {len(objects)}")
 
     date_forms = [
