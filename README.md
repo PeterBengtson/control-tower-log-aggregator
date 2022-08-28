@@ -138,7 +138,7 @@ aggregated.
 When all log files have been added, a final result file is produced by making a last multi-part upload
 of the aggregation file to the final destination, but without the initial 5 MB of dummy data.
 
-As the aggregation is done in place in a dedicated scratch pad bucket, the process is fast even 
+As the aggregation is done in place in a dedicated, unversioned scratch pad bucket, the process is fast even 
 though a multipart upload is done for each component log file. S3 is a high-capacity storage engine that
 really can take a pounding - it's designed for this sort of thing.
 
