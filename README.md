@@ -116,7 +116,7 @@ as STANDARD_IA is about half the price of STANDARD.
 
 ### Log File Combination Algorithm
 AWS S3 surprisingly offers no built-in support for concatenating files of any sort. This is always
-left to the individual developer. The obvious brute-force approach of concatenating kog files together 
+left to the individual developer. The obvious brute-force approach of concatenating log files together 
 in lambda or instance memory doesn't scale well enough here and also presents problems when it comes 
 to large log files, memory sizes, and the fairly conservative maximum size for lambda output. 
 
