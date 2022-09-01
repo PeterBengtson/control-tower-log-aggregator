@@ -22,6 +22,12 @@ States:
                     - Lambda.ServiceException
                     - Lambda.AWSLambdaException
                     - Lambda.SdkClientException
+            -
+                ErrorEquals:
+                    - Lambda.TooManyRequestsException
+                IntervalSeconds: 1
+                MaxAttempts: 100
+                BackoffRate: 5
         Next: Process All Logs
 
     Process All Logs:
@@ -53,6 +59,12 @@ States:
                                                 - Lambda.ServiceException
                                                 - Lambda.AWSLambdaException
                                                 - Lambda.SdkClientException
+                                        -
+                                            ErrorEquals:
+                                                - Lambda.TooManyRequestsException
+                                            IntervalSeconds: 1
+                                            MaxAttempts: 100
+                                            BackoffRate: 5
                                     Next: Process Accounts
                                     
                                 Process Accounts:
@@ -79,6 +91,12 @@ States:
                                                             - Lambda.ServiceException
                                                             - Lambda.AWSLambdaException
                                                             - Lambda.SdkClientException
+                                                    -
+                                                        ErrorEquals:
+                                                            - Lambda.TooManyRequestsException
+                                                        IntervalSeconds: 1
+                                                        MaxAttempts: 100
+                                                        BackoffRate: 5
                                                 Next: Get Main Log Files
 
                                             Get Main Log Files:
@@ -92,6 +110,12 @@ States:
                                                             - Lambda.ServiceException
                                                             - Lambda.AWSLambdaException
                                                             - Lambda.SdkClientException
+                                                    -
+                                                        ErrorEquals:
+                                                            - Lambda.TooManyRequestsException
+                                                        IntervalSeconds: 1
+                                                        MaxAttempts: 100
+                                                        BackoffRate: 5
                                                 Next: Determine Main Log Archive Key
 
                                             Determine Main Log Archive Key:
@@ -105,6 +129,12 @@ States:
                                                             - Lambda.ServiceException
                                                             - Lambda.AWSLambdaException
                                                             - Lambda.SdkClientException
+                                                    -
+                                                        ErrorEquals:
+                                                            - Lambda.TooManyRequestsException
+                                                        IntervalSeconds: 1
+                                                        MaxAttempts: 100
+                                                        BackoffRate: 5
                                                 Next: Combine Main Log Files
 
                                             Combine Main Log Files:
@@ -118,6 +148,12 @@ States:
                                                             - Lambda.ServiceException
                                                             - Lambda.AWSLambdaException
                                                             - Lambda.SdkClientException
+                                                    -
+                                                        ErrorEquals:
+                                                            - Lambda.TooManyRequestsException
+                                                        IntervalSeconds: 1
+                                                        MaxAttempts: 100
+                                                        BackoffRate: 5
                                                 Next: Delete Main Log Originals
 
                                             Delete Main Log Originals:
@@ -131,6 +167,12 @@ States:
                                                             - Lambda.ServiceException
                                                             - Lambda.AWSLambdaException
                                                             - Lambda.SdkClientException
+                                                    -
+                                                        ErrorEquals:
+                                                            - Lambda.TooManyRequestsException
+                                                        IntervalSeconds: 1
+                                                        MaxAttempts: 100
+                                                        BackoffRate: 5
                                                 End: true
                                     End: true
                         End: true
@@ -160,6 +202,12 @@ States:
                                                 - Lambda.ServiceException
                                                 - Lambda.AWSLambdaException
                                                 - Lambda.SdkClientException
+                                        -
+                                            ErrorEquals:
+                                                - Lambda.TooManyRequestsException
+                                            IntervalSeconds: 1
+                                            MaxAttempts: 100
+                                            BackoffRate: 5
                                     Next: Determine Archive Key
 
                                 Determine Archive Key:
@@ -173,6 +221,12 @@ States:
                                                 - Lambda.ServiceException
                                                 - Lambda.AWSLambdaException
                                                 - Lambda.SdkClientException
+                                        -
+                                            ErrorEquals:
+                                                - Lambda.TooManyRequestsException
+                                            IntervalSeconds: 1
+                                            MaxAttempts: 100
+                                            BackoffRate: 5
                                     Next: Combine Log Files
 
                                 Combine Log Files:
@@ -186,6 +240,12 @@ States:
                                                 - Lambda.ServiceException
                                                 - Lambda.AWSLambdaException
                                                 - Lambda.SdkClientException
+                                        -
+                                            ErrorEquals:
+                                                - Lambda.TooManyRequestsException
+                                            IntervalSeconds: 1
+                                            MaxAttempts: 100
+                                            BackoffRate: 5
                                     Next: Delete Originals
 
                                 Delete Originals:
@@ -199,6 +259,12 @@ States:
                                                 - Lambda.ServiceException
                                                 - Lambda.AWSLambdaException
                                                 - Lambda.SdkClientException
+                                        -
+                                            ErrorEquals:
+                                                - Lambda.TooManyRequestsException
+                                            IntervalSeconds: 1
+                                            MaxAttempts: 100
+                                            BackoffRate: 5
                                     End: true
                         End: true
         End: true

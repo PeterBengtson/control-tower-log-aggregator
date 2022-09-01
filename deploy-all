@@ -1,0 +1,39 @@
+#!/bin/bash -e
+
+if [ "$AWS_ACCESS_KEY_ID" == "" ] ; then
+    echo "Please set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY_ID and AWS_SESSION_TOKEN from the SSO temporary credentials popup screen."
+    exit 1
+fi
+
+if [ -z "$1" ] ; then
+    prefix=""
+    echo
+    echo "(Fetching samconfig files from the current directory)"
+else
+    prefix="samconfig/$1/"
+    if [ -d $prefix ] ; then
+        echo
+        echo "(Fetching samconfig files from $prefix)"
+    else
+        echo "The directory $prefix doesn't exist"
+        exit 1
+    fi
+fi
+
+for FILE in ${prefix}samconfig-*.toml
+do 
+    echo
+    echo
+    echo "# ===================================================================================================="
+    echo "#    $FILE:"
+    echo "# ----------------------------------------------------------------------------------------------------"
+    echo
+    sam deploy --config-file $FILE --no-fail-on-empty-changeset
+done
+
+echo
+echo
+echo "# ===================================================================================================="
+echo "#    Done."
+echo "# ===================================================================================================="
+echo
