@@ -116,10 +116,9 @@ as STANDARD_IA is about half the price of STANDARD.
 
 ### Log File Combination Algorithm
 AWS S3 surprisingly offers no built-in support for concatenating files of any sort. This is always
-left to the individual developer. The obvious brute-force approach of reading each log
-file, concatenating them together in lambda or instance memory doesn't scale well enough here and
-also presents problems when it comes to large log files, memory sizes, and the fairly conservative 
-maximum size for lambda output. 
+left to the individual developer. The obvious brute-force approach of concatenating log files together 
+in lambda or instance memory doesn't scale well enough here and also presents problems when it comes 
+to large log files, memory sizes, and the fairly conservative maximum size for lambda output. 
 
 It's also not ideal from a cost perspective as transfer costs and times will become significant. 
 There are also security implications stemming from the fact that logs may contain sensitive 
@@ -139,7 +138,7 @@ aggregated.
 When all log files have been added, a final result file is produced by making a last multi-part upload
 of the aggregation file to the final destination, but without the initial 5 MB of dummy data.
 
-As the aggregation is done in place in a dedicated scratch pad bucket, the process is fast even 
+As the aggregation is done in place in a dedicated, unversioned scratch pad bucket, the process is fast even 
 though a multipart upload is done for each component log file. S3 is a high-capacity storage engine that
 really can take a pounding - it's designed for this sort of thing.
 
