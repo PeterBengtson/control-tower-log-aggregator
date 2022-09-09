@@ -23,7 +23,7 @@ def lambda_handler(data, _context):
     dest_bucket_name = DEST_LOGS_BUCKET_NAME or source_bucket_name
     final_key = data['key']
     log_files = get_files(data['files'])
-    ct_log_types = data['ct_log_types']
+    main_log_type = data.get('log_type')   # This is only true for a main log file
 
     if not log_files:
         print("No files specified")
@@ -39,7 +39,7 @@ def lambda_handler(data, _context):
     # aggregate.
     for log_file in log_files:
 
-        if not aggregatable(log_file, ct_log_types):
+        if not aggregatable(log_file, main_log_type):
             continue
 
         # Initiate the multipart upload
@@ -131,19 +131,13 @@ def get_files(thing):
     return files
 
 
-def aggregatable(log_file, ct_log_types):
-    if not AGGREGATION_REGIONS:
+def aggregatable(log_file, main_log_type):
+    if not main_log_type:
         return True
-    if not is_a_main_log_file(log_file, ct_log_types):
+    if not AGGREGATION_REGIONS:
         return True
     for region in AGGREGATION_REGIONS:
         if region in log_file:
             return True
     return False
 
-
-def is_a_main_log_file(log_file, ct_log_types):
-    for ct_log_type in ct_log_types:
-        if ct_log_type in log_file:
-            return True
-    return False
