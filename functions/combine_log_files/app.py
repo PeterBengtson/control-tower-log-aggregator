@@ -6,6 +6,7 @@ FIVE_MB = 5 * 1024 * 1024
 
 TMP_LOGS_BUCKET_NAME = os.environ['TMP_LOGS_BUCKET_NAME']
 DEST_LOGS_BUCKET_NAME = os.environ['DEST_LOGS_BUCKET_NAME']
+AGGREGATION_REGIONS = os.environ['AGGREGATION_REGIONS'].split(',')
 
 # Create the 5MB file at lambda startup time
 filler_file_path = f'/tmp/five_mb_file'
@@ -22,6 +23,7 @@ def lambda_handler(data, _context):
     dest_bucket_name = DEST_LOGS_BUCKET_NAME or source_bucket_name
     final_key = data['key']
     log_files = get_files(data['files'])
+    ct_log_types = data['ct_log_types']
 
     if not log_files:
         print("No files specified")
@@ -36,6 +38,9 @@ def lambda_handler(data, _context):
     # We now perform a series of two-file multipart uploads, one for each log file we need to
     # aggregate.
     for log_file in log_files:
+
+        if not aggregatable(log_file, ct_log_types):
+            continue
 
         # Initiate the multipart upload
         mpu = s3_client.create_multipart_upload(Bucket=TMP_LOGS_BUCKET_NAME, Key=final_key)
@@ -124,3 +129,21 @@ def get_files(thing):
     )
     files = json.loads(response['Body'].read())
     return files
+
+
+def aggregatable(log_file, ct_log_types):
+    if not AGGREGATION_REGIONS:
+        return True
+    if not is_a_main_log_file(log_file, ct_log_types):
+        return True
+    for region in AGGREGATION_REGIONS:
+        if region in log_file:
+            return True
+    return False
+
+
+def is_a_main_log_file(log_file, ct_log_types):
+    for ct_log_type in ct_log_types:
+        if ct_log_type in log_file:
+            return True
+    return False

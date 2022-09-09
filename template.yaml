@@ -88,6 +88,13 @@ Parameters:
     Description: The minimum size of log files to transition to Glacier Deep Archive.
     Default: 204800
 
+  AggregationRegions:
+    Type: String
+    Description: If given, a comma separated list of regions to aggregate main log files for; main 
+      log files from other regions (presumably blocked and inactive) will be deleted. If left blank, 
+      all regions will be aggregated.
+    Default: ''
+
   
 Conditions:
   UseCommonDestinationBucket: !Equals
@@ -238,6 +245,7 @@ Resources:
         Variables:
           TMP_LOGS_BUCKET_NAME: !Ref TmpLogsBucket
           DEST_LOGS_BUCKET_NAME: !If [UseCommonDestinationBucket, !Ref CommonDestinationBucket, '']
+          AGGREGATION_REGIONS: !Ref AggregationRegions
 
 
   DynamicSetupFunction:
