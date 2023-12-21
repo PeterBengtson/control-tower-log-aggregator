@@ -11,8 +11,8 @@ AGGREGATION_REGIONS = os.environ['AGGREGATION_REGIONS'].split(',')
 # Create the 5MB file at lambda startup time
 filler_file_path = f'/tmp/five_mb_file'
 with open(filler_file_path, 'wb') as f:
-    f.seek(FIVE_MB)
-    f.write(b'0')
+    f.seek(FIVE_MB - 1)
+    f.write(b'\x00')
 
 s3_client = boto3.client('s3')
 s3_resource = boto3.resource('s3')
