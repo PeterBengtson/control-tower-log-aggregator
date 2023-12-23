@@ -1,6 +1,8 @@
 import boto3
 import os
 import json
+import time
+
 
 FIVE_MB = 5 * 1024 * 1024
 
@@ -18,26 +20,43 @@ s3_client = boto3.client('s3')
 s3_resource = boto3.resource('s3')
 
 
-def lambda_handler(data, _context):
+def lambda_handler(data, context):
     source_bucket_name = data['bucket_name']
     dest_bucket_name = DEST_LOGS_BUCKET_NAME or source_bucket_name
     final_key = data['key']
     log_files = get_files(data['files'])
     main_log_type = data.get('log_type')   # This is only true for a main log file
+    continuation_marker = data.get('continuationMarker', 0)  # Default to 0 if not provided
 
     if not log_files:
         print("No files specified")
-        return
+        return {'status': 'no-op'}
+    
+    start_time = time.time()
+    remaining_time = context.get_remaining_time_in_millis() / 1000.0  # Convert to seconds
+
+    if not main_log_type:
+        print(f"Additional log to Final key: {final_key}")
 
     # As multipart uploads require that all files but the last one be >= 5MB, we need to 
     # upload a file of this size to the scratchpad temp bucket as a starting point. The 
     # key used is the same as that of the final merged file.
-    with open(filler_file_path, 'rb') as f:
-        s3_client.upload_fileobj(f, TMP_LOGS_BUCKET_NAME, final_key)
+    if continuation_marker == 0:  # Only upload the filler file if starting from the beginning
+        with open(filler_file_path, 'rb') as f:
+            s3_client.upload_fileobj(f, TMP_LOGS_BUCKET_NAME, final_key)
 
     # We now perform a series of two-file multipart uploads, one for each log file we need to
     # aggregate.
-    for log_file in log_files:
+    # Resume or start the aggregation process
+    for index, log_file in enumerate(log_files[continuation_marker:], start=continuation_marker):
+
+        # Check if there is enough time left to process another file
+        elapsed_time = time.time() - start_time
+        if (remaining_time - elapsed_time) < 120:  # Less than 2 minutes left
+            return {'continuationMarker': index}  # Return the index of the next file to process
+
+        if not main_log_type:
+            print(f"Processing {log_file}...")
 
         if not aggregatable(log_file, main_log_type):
             continue
@@ -64,7 +83,7 @@ def lambda_handler(data, _context):
             part_responses.append(
                 {
                     'ETag': copy_response['CopyPartResult']['ETag'], 
-                    'PartNumber':part_number
+                    'PartNumber': part_number
                 }
             )
 
@@ -117,6 +136,8 @@ def lambda_handler(data, _context):
         Bucket=TMP_LOGS_BUCKET_NAME,
         Key=final_key,
     )
+
+    return {'status': 'done'}
 
 
 def get_files(thing):
