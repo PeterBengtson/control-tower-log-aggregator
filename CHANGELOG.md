@@ -11,9 +11,5 @@
 ## v1.0.7
     * The filler file is now exactly 5MB in size and sparse.
 
-## v1.0.1
-    * Open-source credits and URLs
-    * Fixed installer initial stackset creation.
-
 ## v1.0.0
     * Initial release.
