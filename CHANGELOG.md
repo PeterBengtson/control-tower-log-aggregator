@@ -1,5 +1,8 @@
 # Change Log
 
+## v1.1.0
+    * Release v1.1.0.
+
 ## v1.0.9
     * Continuation mechanism in place to avoid lambda timeouts for large log files
       or large amounts of log files.
