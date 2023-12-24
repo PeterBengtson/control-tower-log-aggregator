@@ -88,8 +88,7 @@ last day. It has the following structure:
 
 <img src="https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/StateMachine.png?raw=true." width="500"/>
 
-Parallel processing is used to optimise log processing times. First of all, the main 
-Control Tower log bucket is processed in parallel with the auxiliary log buckets. 
+Parallel processing is used to optimise log processing times. 
 
 The main logs are processed 10 accounts at a time, and in each account, the three main log types 
 (CloudTrail, CloudTrail Digest, and Config) are in their turn processed in parallel. 
@@ -99,7 +98,7 @@ The number of accounts processed at a time can be changed in the `combine_log_fi
 configuration file; look for `Process Accounts` and then `MaxConcurrency` which has a value of 10. 
 (It can unfortunately not be parametrised.)
 
-The number of auxiliary log buckets processed at a time (also 10) can likewise be changed in 
+The number of auxiliary log buckets processed at a time (1) can likewise be changed in 
 `Process Other Logs`.
 
 ### Storage Classes
