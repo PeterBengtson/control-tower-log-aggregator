@@ -1,5 +1,8 @@
 # Change Log
 
+## v1.1.1
+    * Fixed continuation bug. Now this utility handles log files of any size and any number.
+
 ## v1.1.0
     * Release v1.1.0.
 

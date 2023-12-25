@@ -98,7 +98,7 @@ The number of accounts processed at a time can be changed in the `combine_log_fi
 configuration file; look for `Process Accounts` and then `MaxConcurrency` which has a value of 10. 
 (It can unfortunately not be parametrised.)
 
-The number of auxiliary log buckets processed at a time (1) can likewise be changed in 
+The number of auxiliary log buckets processed at a time (10) can likewise be changed in 
 `Process Other Logs`.
 
 ### Storage Classes
