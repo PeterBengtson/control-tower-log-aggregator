@@ -1,0 +1,38 @@
+Comment: "A state machine that processes main logs for a date range in the past."
+StartAt: Compute Date List
+States:
+  Compute Date List:
+    Type: Task
+    Resource: "${ComputeDateListFunctionArn}"
+    ResultPath: $.date_list
+    Next: Process Each Date
+
+  Process Each Date:
+    Type: Map
+    InputPath: $
+    ItemsPath: $.date_list
+    MaxConcurrency: 1
+    Parameters:
+      "date.$": "$$.Map.Item.Value"
+      "bucket_name.$": "$.bucket_name"
+    Iterator:
+      StartAt: Process Date
+      States:
+
+        Process Date:
+            Type: Task
+            Resource: 'arn:aws:states:::states:startExecution.sync:2'
+            Parameters:
+                Input:
+                    "date.$": "$.date"
+                    "bucket_name.$": "$.bucket_name"
+                    AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$: $$.Execution.Id
+                StateMachineArn: '${CombineLogFilesSMArn}'
+            Retry:
+                -
+                    ErrorEquals:
+                        - StepFunctions.ExecutionLimitExceeded
+            OutputPath: $.Output
+            End: true
+
+    End: true

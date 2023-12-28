@@ -24,12 +24,12 @@ def lambda_handler(data, _context):
     objects = []
     for raw_prefix in prefixes:
         # Since the Control Tower team is known to do unannounced breaking changes, play safe:
-        untrimmed_prefix = f'{raw_prefix}{year}/{month}/{day}'
+        untrimmed_prefix = f'{raw_prefix}{year}/{month}/{day}/'
         print(f"Finding files with the prefix {untrimmed_prefix}")
         fs = list(s3_resource.Bucket(bucket_name).objects.filter(Prefix=untrimmed_prefix))
         objects.extend(fs)
 
-        trimmed_prefix = f'{raw_prefix}{year}/{month_trimmed}/{day_trimmed}'
+        trimmed_prefix = f'{raw_prefix}{year}/{month_trimmed}/{day_trimmed}/'
         if trimmed_prefix != untrimmed_prefix:
             print(f"Also finding files with the prefix {trimmed_prefix}")
             fs = list(s3_resource.Bucket(bucket_name).objects.filter(Prefix=trimmed_prefix))

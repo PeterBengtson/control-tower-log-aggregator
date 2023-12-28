@@ -1,5 +1,10 @@
 # Change Log
 
+## v1.2.0
+    * Auxiliary log file copy strategy used when all log files are > 200K.
+    * Bulk deletes now used to speed up deletion of log file originals.
+    * State machine to process historical logs. See template.yaml for details.
+
 ## v1.1.1
     * Fixed continuation bug. Now this utility handles log files of any size and any number.
 

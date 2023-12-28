@@ -166,10 +166,10 @@ Resources:
             AbortIncompleteMultipartUpload:
               DaysAfterInitiation: 1
 
-  CombineLogFilesStateMachine:
+  CombineLogFilesSM:
     Type: AWS::Serverless::StateMachine
     Properties:
-      DefinitionUri: statemachine/combine_log_files.asl.yaml
+      DefinitionUri: statemachines/combine_log_files.asl.yaml
       DefinitionSubstitutions:
         DynamicSetupFunctionArn: !GetAtt DynamicSetupFunction.Arn
         GetFilesFunctionArn: !GetAtt GetFilesFunction.Arn
@@ -179,6 +179,9 @@ Resources:
         GetControlTowerAccountIDsFunctionArn: !GetAtt GetControlTowerAccountIDsFunction.Arn
         GetRegionsFunctionArn: !GetAtt GetRegionsFunction.Arn
         GetExactFilesFunctionArn: !GetAtt GetExactFilesFunction.Arn
+        DetermineOperationTypeFunctionArn: !GetAtt DetermineOperationTypeFunction.Arn
+        CopyLogFilesFunctionArn: !GetAtt CopyLogFilesFunction.Arn
+
         ControlTowerBucketName: !Ref ControlTowerBucket
         OtherBucketNames: !Ref OtherBuckets
       Events:
@@ -205,6 +208,11 @@ Resources:
             FunctionName: !Ref GetRegionsFunction
         - LambdaInvokePolicy:
             FunctionName: !Ref GetExactFilesFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref DetermineOperationTypeFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref CopyLogFilesFunction
+
 
   CombineLogFilesFunction:
     Type: AWS::Serverless::Function 
@@ -252,6 +260,13 @@ Resources:
     Type: AWS::Serverless::Function 
     Properties:
       CodeUri: functions/dynamic_setup/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:ListAllMyBuckets
+              Resource: '*'
 
 
   DetermineArchiveKeyFunction:
@@ -413,13 +428,117 @@ Resources:
           BUCKET_NAME: !Ref ControlTowerBucketAccessLogBucket
 
 
-  # Alarm
+  DetermineOperationTypeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/determine_operation_type/
+      Policies:
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:HeadBucket
+                - s3:HeadObject
+                - s3:ListBucket
+              Resource: '*'
+      Environment:
+        Variables:
+          TMP_LOGS_BUCKET_NAME: !Ref TmpLogsBucket
+          MIN_SIZE: !Ref GlacierObjectSize
+
+
+  CopyLogFilesFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/copy_log_files/
+      Policies:
+        - Statement:
+            - 
+              Sid: S3CopyPermissions
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:ListBucket
+                - s3:PutObject
+                - s3:CopyObject
+              Resource: '*'
+      Environment:
+        Variables:
+          TMP_LOGS_BUCKET_NAME: !Ref TmpLogsBucket
+          DEST_LOGS_BUCKET_NAME: !If [UseCommonDestinationBucket, !Ref CommonDestinationBucket, '']
+
+
+  # ---------------------------------------------------------------------------
+  #
+  # State machine for processing consecutive days of historical main logs.
+  # Call this with the following arguments:
+  #
+  # {
+  #   "start_date": "YYYY-MM-DD",
+  #   "end_date": "YYYY-MM-DD",
+  #   "bucket_name": "aws-controltower-logs-123456789012-xx-yyyy-1"
+  # }
+  #
+  # ---------------------------------------------------------------------------
+
+  ProcessHistoricalMainLogsSM:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: statemachines/process_historical_main_logs.asl.yaml
+      DefinitionSubstitutions:
+        ComputeDateListFunctionArn: !GetAtt ComputeDateListFunction.Arn
+        CombineLogFilesSMArn: !Ref CombineLogFilesSM
+
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - events:PutTargets
+                - events:PutRule
+                - events:DescribeRule
+              Resource:
+                - !Sub arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule
+            - Effect: Allow
+              Action: states:StartExecution
+              Resource:
+                - !Ref CombineLogFilesSM
+            - Effect: Allow
+              Action:
+                - states:DescribeExecution
+                - states:StopExecution
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - logs:*
+              Resource: '*'
+              
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ComputeDateListFunction
+
+        - StepFunctionsExecutionPolicy:
+            StateMachineName: !Ref CombineLogFilesSM
+
+
+  ComputeDateListFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/compute_date_list/
+
+
+  # ---------------------------------------------------------------------------
+  #
+  # Alarms
+  #
+  # ---------------------------------------------------------------------------
 
   AlarmCombineLogFilesStateMachine:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: INFRA-CombineLogFilesStateMachine-Failure-HIGH
-      AlarmDescription: The CombineLogFilesStateMachine state machine failed.
+      AlarmName: INFRA-CombineLogFilesSM-Failure-HIGH
+      AlarmDescription: The CombineLogFilesSM state machine failed.
       ActionsEnabled: true
       OKActions: []
       AlarmActions: []
@@ -429,7 +548,30 @@ Resources:
       Statistic: Sum
       Dimensions:
         - Name: StateMachineArn
-          Value: !Ref CombineLogFilesStateMachine
+          Value: !Ref CombineLogFilesSM
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+
+  AlarmProcessHistoricalMainLogsStateMachine:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: INFRA-ProcessHistoricalMainLogsSM-Failure-HIGH
+      AlarmDescription: The ProcessHistoricalMainLogsSM state machine failed.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions: []
+      InsufficientDataActions: []
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
+      Statistic: Sum
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Ref ProcessHistoricalMainLogsSM
       Period: 60
       EvaluationPeriods: 1
       DatapointsToAlarm: 1

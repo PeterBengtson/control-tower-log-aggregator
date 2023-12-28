@@ -9,6 +9,7 @@ TMP_LOGS_BUCKET_NAME = os.environ['TMP_LOGS_BUCKET_NAME']
 s3_client = boto3.client('s3')
 s3_resource = boto3.resource('s3')
 
+
 def lambda_handler(data, _context):
     bucket_name = data['bucket_name']
     prefix = data.get('prefix', '')
@@ -39,6 +40,7 @@ def lambda_handler(data, _context):
     files = list(map(lambda x: x.key, objects))
     return save_files(files, bucket_name, prefix, date)
 
+
 def is_wanted(key, date_forms, only_gz):
     if only_gz and not key.endswith('.gz'):
         return False
@@ -46,6 +48,7 @@ def is_wanted(key, date_forms, only_gz):
         if f in key:
             return True
     return False
+
 
 def save_files(files, bucket_name, prefix, date):
     # If the number of files is small, then just return the file list as is

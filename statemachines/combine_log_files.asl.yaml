@@ -10,6 +10,7 @@ States:
                 - CloudTrail-Digest
                 - Config
             bucket_names: '${OtherBucketNames}'
+            execution_input.$: '$'
         Next: Dynamic Setup
 
     Dynamic Setup:
@@ -64,7 +65,7 @@ States:
                 Process Accounts:
                     Type: Map
                     ItemsPath: $.account_prefixes
-                    MaxConcurrency: 10  # The number of accounts processed at a time
+                    MaxConcurrency: 0  # The number of accounts processed at a time
                     Parameters:
                         bucket_name.$: $.bucket_name
                         log_type.$: $.log_type
@@ -171,6 +172,10 @@ States:
                                             - Lambda.ServiceException
                                             - Lambda.AWSLambdaException
                                             - Lambda.SdkClientException
+                                            - Lambda.Unknown  # For lambdas that do not signal a timeout type error
+                                        IntervalSeconds: 1
+                                        MaxAttempts: 10
+                                        BackoffRate: 2
                                     -
                                         ErrorEquals:
                                             - Lambda.TooManyRequestsException
@@ -210,8 +215,77 @@ States:
                             IntervalSeconds: 1
                             MaxAttempts: 100
                             BackoffRate: 5
-                    Next: Determine Archive Key
+                    Next: Determine Operation Type
 
+
+                Determine Operation Type:
+                    Type: Task
+                    Resource: '${DetermineOperationTypeFunctionArn}'
+                    ResultPath: $.operation_type
+                    Retry:
+                        -
+                            ErrorEquals:
+                                - States.Timeout
+                                - Lambda.ServiceException
+                                - Lambda.AWSLambdaException
+                                - Lambda.SdkClientException
+                        -
+                            ErrorEquals:
+                                - Lambda.TooManyRequestsException
+                            IntervalSeconds: 1
+                            MaxAttempts: 100
+                            BackoffRate: 5
+                    Next: Decide What To Do
+
+
+                Decide What To Do:
+                    Type: Choice
+                    Choices:
+                        - Variable: $.operation_type
+                          StringEquals: "none"
+                          Next: Bucket Done
+                        - Variable: $.operation_type
+                          StringEquals: "copy_all"
+                          Next: Copy All
+                    Default: Aggregate All
+
+
+                Copy All:
+                    Type: Pass
+                    Next: Copy Log Files
+
+                Copy Log Files:
+                    Type: Task
+                    Resource: '${CopyLogFilesFunctionArn}'
+                    ResultPath: $.combineMainLogsResult
+                    Retry:
+                        -
+                            ErrorEquals:
+                                - States.Timeout
+                                - Lambda.ServiceException
+                                - Lambda.AWSLambdaException
+                                - Lambda.SdkClientException
+                        -
+                            ErrorEquals:
+                                - Lambda.TooManyRequestsException
+                            IntervalSeconds: 1
+                            MaxAttempts: 100
+                            BackoffRate: 5
+                    Next: Check If More To Copy
+
+                Check If More To Copy:
+                    Type: Choice
+                    Choices:
+                        - Variable: $.combineMainLogsResult.continuationMarker
+                          IsPresent: true
+                          Next: Copy Log Files
+                    Default: Delete Originals
+
+
+                Aggregate All:
+                    Type: Pass
+                    Next: Determine Archive Key
+                    
                 Determine Archive Key:
                     Type: Task
                     Resource: '${DetermineArchiveKeyFunctionArn}'
@@ -249,9 +323,9 @@ States:
                             IntervalSeconds: 1
                             MaxAttempts: 100
                             BackoffRate: 5
-                    Next: Check If More
+                    Next: Check If More To Combine
 
-                Check If More:
+                Check If More To Combine:
                     Type: Choice
                     Choices:
                         - Variable: $.combineMainLogsResult.continuationMarker
@@ -271,11 +345,21 @@ States:
                                 - Lambda.ServiceException
                                 - Lambda.AWSLambdaException
                                 - Lambda.SdkClientException
+                                - Lambda.Unknown  # For lambdas that do not signal a timeout type error
+                            IntervalSeconds: 1
+                            MaxAttempts: 10
+                            BackoffRate: 2
                         -
                             ErrorEquals:
                                 - Lambda.TooManyRequestsException
                             IntervalSeconds: 1
                             MaxAttempts: 100
                             BackoffRate: 5
-                    End: true
+                    Next: Bucket Done
+
+
+                Bucket Done:
+                    Type: Succeed
+
+
         End: true
