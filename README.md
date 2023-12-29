@@ -1,6 +1,7 @@
-# control-tower-log-aggregator
+# Foundation-control-tower-log-aggregator
 
-<img src="https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/logs.jpg?raw=true." align="right"/>SAM project to combine small daily log files into larger daily log files, 
+<img src="https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/logs.jpg?raw=true." align="right"/>
+SAM project to combine small daily log files into larger daily log files, 
 to make it possible to store them in Glacier without extra overhead, thereby
 avoiding prohibitive costs. AWS Control Tower is required. 
 
@@ -31,15 +32,15 @@ but also for Config logs. The latter, moreover, is an undocumented change.
 
 ### The Problem 
 Computer logs vary significantly in size from system to system, from log type to log
-type, and even from day to day. They span from a few hundred bytes to several gigabytes
+type, and even from day to day. They can span from a few hundred bytes to terabytes
 in size. This is in itself not a problem, as you pay per byte on AWS. 
 
 However, if you need to keep your logs around for a long time,
 size issues will become a very tangible problem when trying to reduce costs
 by moving logs to Glacier deep storage. The reason for this is that 40K of extra metadata
 is added _to each log file_ in the process and that there are fairly high one-time transfer 
-costs incurred, again per file. Furthermore, there are corresponding costs associated with 
-retrieving items from Glacier, once again per file.
+costs incurred, again per file. Furthermore, there are corresponding per-file costs associated 
+with retrieving items from Glacier.
 
 This means that there is a cutoff below which it is a very bad idea to store files in Glacier.
 In fact, doing so may increase S3 costs dramatically, to the point where Glacier
@@ -70,7 +71,8 @@ expire altogether (default 3650 days).
 The application can also aggregate log files from other types of log buckets in your Log Archive
 account, as long as they have parsable dates in their name/key/path. Such log buckets would
 typically include VPC Flow logs, CloudWatch logs, load balancer logs, CloudFront logs, 
-GuardDuty logs, and log bucket S3 access logs, but they may be anything.
+GuardDuty logs, and log bucket S3 access logs, but they may be anything. This application will
+collect all such logs from disparate sources and store them in a consistent directory structure.
 
 The file size problem is one that needs to be solved in any system required to store logs for
 a long time. There seems to be a remarkable lack of solutions to this problem, given that every
@@ -90,16 +92,17 @@ last day. It has the following structure:
 
 Parallel processing is used to optimise log processing times. 
 
-The main logs are processed 10 accounts at a time, and in each account, the three main log types 
-(CloudTrail, CloudTrail Digest, and Config) are in their turn processed in parallel. 
-Thus a maximum of 30 main log files are processed in parallel at any given time. 
+The main logs are processed in parallel, and in each account the three main log types 
+(`CloudTrail`, `CloudTrail-Digest`, `Config`) are in their turn also processed in parallel. 
+This means that AWS Step Functions will allocate resources in parallel dynamically to 
+optimise the process as much as possible. 
 
 The number of accounts processed at a time can be changed in the `combine_log_files.asl.yaml` 
-configuration file; look for `Process Accounts` and then `MaxConcurrency` which has a value of 10. 
-(It can unfortunately not be parametrised.)
+configuration file; look for `Process Accounts` and then `MaxConcurrency` which both have a 
+value of 0. Change them as you see fit. (These numbers can unfortunately not be parametrised.)
 
-The number of auxiliary log buckets processed at a time (10) can likewise be changed in 
-`Process Other Logs`.
+The number of auxiliary log buckets processed at a time can likewise be changed in 
+`Process Other Logs`. It is by default set to 10.
 
 ### Storage Classes
 This application handles storage classes and class changes in the following way:
@@ -142,8 +145,19 @@ As the aggregation is done in place in a dedicated, unversioned scratch pad buck
 though a multipart upload is done for each component log file. S3 is a high-capacity storage engine that
 really can take a pounding - it's designed for this sort of thing.
 
+#### Aggregate or Copy
+All main log files (`CloudTrail`, `CloudTrail-Digest`, `Config`) are always aggregated into larger files
+according to the above algorithm as we know that it never will be the case that they all exceed the 200K
+limit, especially not per account. 
 
-## Installation
+With the additional log buckets specified by `OtherBuckets` we can make no such assumptions, which
+means that there is room for an optimisation: if _all_ log files in a bucket exceed the configurable
+minimum size for Glacier, these files are simply copied individually to the destination without aggregating 
+them together into larger files, thus further saving processing time and S3 costs. This is very useful when
+processing high-volume CloudWatch logs using utilities such as https://github.com/Delegat-AB/Foundation-CloudWatch2S3.
+
+
+## Stand-Alone Installation
 
 Install in the Log Archive account, in your main region.
 
@@ -190,3 +204,38 @@ Next time you need to deploy or update the application, simply do a:
 sam build && sam deploy
 ```
 If you need to change the parameter overrides, you can do so by running `sam deploy --guided` again, or you can simply change the overrides in `samconfig.toml` and just build and deploy using the shorter form given above.
+
+
+## Installation as Part of Delegat Foundation
+
+It's the usual configuration in `Delegat-Install` and then `./deploy`. Or just let `Delegat-Install` handle it using a `./deploy-all Foundation`.
+
+
+## Processing Old Main Logs
+
+Version 1.2 of this application includes an AWS Step Function specifically designed to process the
+mass of your existing historical main log files. As the daily processing involves the past day only, you
+can use this Step Function to process the main log files produced by AWS Control Tower before that
+date.
+
+To do so, log in to the Log Archive and find the console for the Step Function called `ProcessHistoricalMainLogsSM`.
+Run it with an input such as the following:
+
+```
+   {
+     "start_date": "YYYY-MM-DD",
+     "end_date": "YYYY-MM-DD",
+     "bucket_name": "aws-controltower-logs-123456789012-xx-yyyy-1"
+   }
+
+```
+
+Where the bucket name is the source bucket for old log files. It can be the same as your Control
+Tower log bucket (which has the format `aws-controltower-logs-<account-id>-<region>`), or it can
+be any other bucket containing AWS Control Tower main log files.
+
+Note that only AWS Control Tower main log files (`CloudTrail`, `CloudTrail-Digest`, `Config`) will 
+be processed by this batch mode processor. If your batch execution spans a long period
+of time, or there is a large volume of log data, make sure that the execution does not run at the
+same time as the main daily processor `CombineLogFilesSM`. You may want to disable the EventBridge
+`cron` event that runs `CombineLogFilesSM` at 1 AM until the batch job is done.
