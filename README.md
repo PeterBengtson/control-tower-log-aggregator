@@ -164,7 +164,7 @@ Install in the Log Archive account, in your main region.
 Prerequisites:
 * AWS CLI
 * AWS SAM CLI
-* Python 3.9 (if you have another version installed, change the default in the
+* Python 3.12 (if you have another version installed, change the default in the
   Globals section in `template.yaml.`)
 
 Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Using a common
