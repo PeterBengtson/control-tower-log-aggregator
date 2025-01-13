@@ -205,50 +205,6 @@ sam build && sam deploy
 ```
 If you need to change the parameter overrides, you can do so by running `sam deploy --guided` again, or you can simply change the overrides in `samconfig.toml` and just build and deploy using the shorter form given above.
 
-## Multi-Regional Installation
-
-Deploying to multiple regions is done by using multiple TOML files with different names beginning with `samconfig-`. The files will be processed in alphabetical order, so simply name them accordingly, e.g.:
-
-![](docs-images/multi-region.png)
-
-The config file names are not processed in any special way, but you might want to include region information in the name to make it easier for yourself. Cf the above image.
-
-To create this setup, you basically follow the single-region setup instructions. Built as usual using `sam build`, but then add the following switch to the deployment command:
-
-```console
-sam deploy --guided --config-file=samconfig-<something>.toml
-```
-
-The `<something>` part can, again, be anything you like.
-
-Then, when you have deployed to all of your regions and generated config files for them in the process, the next time you wish to build and deploy, simply do the following:
-
-```console
-sam build
-./deploy-all
-```
-
-The `deploy-all`bash script will find your config files in the project root directory and process them in alphabetical order.
-
-## Multi-System Installation
-
-If you have more than one system or customer, you can create a `samconfig`folder with subfolders named after the separate systems, like this:
-
-![](docs-images/multi-system.png)
-
-This allows you to type
-
-```console
-./deploy-all acme
-```
-
-or
-
-```console
-./deploy-all buzzcloud
-```
-
-The appropriate subfolder will be selected and its TOML files processed in alphabetical order. This is actually a good structure to adopt for a single system setup as well, as it keeps the root directory uncluttered.
 
 ## Processing Old Main Logs
 
