@@ -44,7 +44,7 @@ Parameters:
       If you are running any other version of Control Tower, leave this parameter
       blank. Instead, list the name of your Control Tower S3 access log bucket
       in the OtherBuckets parameter which will set it up to be parsed correctly.
-    Default: 'aws-controltower-s3-access-logs-111122223333-xx-xxxxx-1' 
+    Default: '' 
 
   OtherBuckets:
     Type: String
@@ -90,10 +90,15 @@ Parameters:
 
   AggregationRegions:
     Type: String
-    Description: If given, a comma separated list of regions to aggregate main log files for; main 
+    Description: If given, a JSON list of regions to aggregate main log files for; main 
       log files from other regions (presumably blocked and inactive) will be deleted. If left blank, 
       all regions will be aggregated.
-    Default: ''
+    Default: '[]'
+
+  DashboardName:
+    Type: String
+    Description: The name of the dashboard. Set to CloudWatch-Default to make it the default dashboard.
+    Default: "CloudWatch-Default"
 
   
 Conditions:
@@ -578,3 +583,77 @@ Resources:
       Threshold: 1
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
+
+
+  #-------------------------------------------------------------------------------
+  #
+  # CloudWatch dashboard with custom resource to process an arbitrary bucket list
+  #
+  #-------------------------------------------------------------------------------
+
+  DashboardBuilderFunction:
+    Type: AWS::Serverless::Function
+    Condition: UseCommonDestinationBucket
+    Properties:
+      CodeUri: functions/dashboard-builder/
+      Handler: app.lambda_handler
+      Timeout: 30
+      Policies:
+        - Statement:
+            - 
+              Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:ListAllMyBuckets
+              Resource: '*'
+            - 
+              Sid: CloudWatchPermissions
+              Effect: Allow
+              Action:
+                - cloudwatch:PutDashboard
+                - cloudwatch:DeleteDashboards
+              Resource: '*'
+      Environment:
+        Variables:
+          CONTROL_TOWER_BUCKET: !Ref ControlTowerBucket
+          DASHBOARD_NAME: !Ref DashboardName
+          BUCKET_PREFIXES: !Ref OtherBuckets
+          REGION: !Sub "${AWS::Region}"
+          COMMON_DESTINATION_BUCKET: !Sub "all-aggregated-logs-${AWS::AccountId}-${AWS::Region}"
+          COMBINE_LOG_FILES_SM_ARN: !Ref CombineLogFilesSM
+          BODY_VARIABLE: !Sub |
+                {
+                    "height": 9,
+                    "width": 24,
+                    "y": 13,
+                    "x": 0,
+                    "type": "metric",
+                    "properties": {
+                        "metrics": [
+                            <FIRST_VARIABLE>
+                            <REST_VARIABLE>
+                        ],
+                        "view": "pie",
+                        "region": "${AWS::Region}",
+                        "period": 86400,
+                        "legend": {
+                            "position": "right"
+                        },
+                        "labels": {
+                            "visible": true
+                        },
+                        "stat": "Maximum",
+                        "title": "Size of buckets being aggregated"
+                    }
+                }
+          FIRST_VARIABLE: !Sub '[ "AWS/S3", "BucketSizeBytes", "BucketName", "<BUCKET_NAME>", "StorageType", "StandardStorage", { "region": "${AWS::Region}" } ]'
+          REST_VARIABLE:  !Sub '[ "...", "<BUCKET_NAME>", ".", ".", { "region": "${AWS::Region}" } ]'
+
+
+  DashboardBuilderCustomResource:
+    Type: AWS::CloudFormation::CustomResource
+    Condition: UseCommonDestinationBucket
+    Properties:
+      ServiceToken: !GetAtt DashboardBuilderFunction.Arn
+      FunctionName: !Ref DashboardBuilderFunction
+      BucketListProperty: !Ref OtherBuckets

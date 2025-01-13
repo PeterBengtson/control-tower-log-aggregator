@@ -2,13 +2,21 @@ import boto3
 import os
 import json
 import time
+import logging
+
+# Configure the logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 FIVE_MB = 5 * 1024 * 1024
 
 TMP_LOGS_BUCKET_NAME = os.environ['TMP_LOGS_BUCKET_NAME']
 DEST_LOGS_BUCKET_NAME = os.environ['DEST_LOGS_BUCKET_NAME']
-AGGREGATION_REGIONS = os.environ['AGGREGATION_REGIONS'].split(',')
+
+AGGREGATION_REGIONS = os.environ.get('AGGREGATION_REGIONS', "[]")
+AGGREGATION_REGIONS = json.loads(AGGREGATION_REGIONS.replace("'", '"'))
+
 
 # Create the 5MB file at lambda startup time
 filler_file_path = f'/tmp/five_mb_file'

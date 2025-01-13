@@ -20,7 +20,7 @@ def lambda_handler(data, _context):
     s3_client.head_bucket(Bucket=bucket_name)
     print("Bucket exists.")
 
-    print(f"Getting files...")
+    print(f"Getting files with prefix '{prefix}'...")
     objects = list(s3_resource.Bucket(bucket_name).objects.filter(Prefix=prefix))
     print(f"Total number of files: {len(objects)}")
 

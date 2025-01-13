@@ -3,7 +3,7 @@
 <img src="https://github.com/PeterBengtson/control-tower-log-aggregator/blob/main/docs-images/logs.jpg?raw=true." align="right"/>
 SAM project to combine small daily log files into larger daily log files, 
 to make it possible to store them in Glacier without extra overhead, thereby
-avoiding prohibitive costs. AWS Control Tower is required. 
+avoiding prohibitive costs. AWS Control Tower is required.
 
 Apart from the standard Control Tower log buckets, this application can also 
 process any arbitrary log buckets, as long as the log files in them have 
@@ -164,7 +164,7 @@ Install in the Log Archive account, in your main region.
 Prerequisites:
 * AWS CLI
 * AWS SAM CLI
-* Python 3.9 (if you have another version installed, change the default in the
+* Python 3.12 (if you have another version installed, change the default in the
   Globals section in `template.yaml.`)
 
 Take a look at the Parameters section in `template.yaml` for an explanation of the parameters. Using a common
@@ -204,11 +204,6 @@ Next time you need to deploy or update the application, simply do a:
 sam build && sam deploy
 ```
 If you need to change the parameter overrides, you can do so by running `sam deploy --guided` again, or you can simply change the overrides in `samconfig.toml` and just build and deploy using the shorter form given above.
-
-
-## Installation as Part of Delegat Foundation
-
-It's the usual configuration in `Delegat-Install` and then `./deploy`. Or just let `Delegat-Install` handle it using a `./deploy-all Foundation`.
 
 
 ## Processing Old Main Logs

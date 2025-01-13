@@ -1,5 +1,21 @@
 # Change Log
 
+## v1.4.1
+    * Added prefix data in debug printout.
+
+## v1.4.0
+    * Added `.python-version` file for pyenv.
+    * Upgraded to Python 3.12.
+
+## v1.3.1
+    * Included the Control Tower bucket size on the dashboard.
+
+## v1.3.0
+    * Dashboard added.
+
+## v1.2.1
+    * Documented the new features in the README.
+
 ## v1.2.0
     * Auxiliary log file copy strategy used when all log files are > 200K.
     * Bulk deletes now used to speed up deletion of log file originals.
@@ -21,6 +37,25 @@
 
 ## v1.0.7
     * The filler file is now exactly 5MB in size and sparse.
+
+## v1.0.6
+    * Fixed the 1B bug when aggregation regions are specified.
+
+## v1.0.5
+    * Specified boto3 version 1.33.12.
+
+## v1.0.4
+    * Added final slash to prefix string now required to work as a prefix.
+
+## v1.0.3
+    * Corrected bug to select no buckets when the prefix list is empty.
+
+## v1.0.2
+    * Refreshed deployment scripts.
+
+## v1.0.1
+    * Open-source credits and URLs
+    * Fixed installer initial stackset creation.
 
 ## v1.0.0
     * Initial release.
