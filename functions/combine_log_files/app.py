@@ -24,8 +24,12 @@ with open(filler_file_path, 'wb') as f:
     f.seek(FIVE_MB - 1)
     f.write(b'\x00')
 
-s3_client = boto3.client('s3')
-s3_resource = boto3.resource('s3')
+s3_client = boto3.client('s3', config=boto3.config.Config(
+                                max_pool_connections=50,
+                                retries={'max_attempts': 10}))
+s3_resource = boto3.resource('s3', config=boto3.config.Config(
+                                    max_pool_connections=50,
+                                    retries={'max_attempts': 10}))
 
 
 def lambda_handler(data, context):

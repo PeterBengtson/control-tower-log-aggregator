@@ -223,6 +223,7 @@ Resources:
     Type: AWS::Serverless::Function 
     Properties:
       CodeUri: functions/combine_log_files/
+      MemorySize: 2048    # For maximum I/O performance
       Policies:
         - Statement:
             - 
