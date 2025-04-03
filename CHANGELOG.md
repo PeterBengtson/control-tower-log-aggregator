@@ -1,5 +1,13 @@
 # Change Log
 
+## v1.5.1
+    * Corrected S3 client initialisation.
+
+## v1.5.0
+    * Performance optimization for CombineLogFilesFunction:
+      * Increased memory allocation to 2048MB
+      * Added S3 connection pooling with retry configuration
+
 ## v1.4.1
     * Added prefix data in debug printout.
 
